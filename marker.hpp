@@ -21,7 +21,7 @@ public:
   void convertArea2PositionMarker(const Image3D& image, const Area& area, PositionMarker& pm, int rectID) const;
   bool getNextPos(const Image3D& image, PositionMarker &nextPos);
 private:
-  static const unsigned char hueAcceptance = 8;
+  static const unsigned char hueAcceptance = 15;
   static const unsigned char saturationMin = 60;
   static const unsigned char saturationMax = 255;
   static const unsigned char valueMin = 60;
@@ -38,5 +38,7 @@ private:
   PositionMarker previousPos;
 
   bool getOtherArea(const Image3D& image, Area &area, unsigned int& minJdone, unsigned int& maxJdone);
+  bool detectFromZero(const Image3D& image, PositionMarker& nextPos);
+  bool checkBinary(const Image3D& image, PositionMarker& nextPos);
 };
 

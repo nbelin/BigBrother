@@ -12,6 +12,7 @@ public:
   unsigned int maxJ;
   unsigned int size;
   unsigned int error;
+  float rank;
   inline bool isInside(unsigned int i, unsigned int j) const {
     return (i >= minI && i<= maxI &&
 	    j >= minJ && j <= maxJ);
@@ -35,9 +36,10 @@ private:
   unsigned int endIvec;
   unsigned int startJvec;
   unsigned int endJvec;
+public:
   bool isRightColor(const Color& val) const;
   bool isPixelRightColor(const Image3D& image, unsigned int i, unsigned int j) const;
-  void rateArea(const Image3D& image, Image& mask, Area& area, unsigned int i, unsigned int j);
+  void rateArea(Area& area);
   void expandArea(const Image3D& image, Image& mask, Area& area, unsigned int i, unsigned int j);
 };
 
