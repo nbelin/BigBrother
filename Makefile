@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-Wall -O2 -std=c++11 -ltfo
+CFLAGS=-Wall -Wextra -O3 -std=c++11 -ltfo
 LFLAGS=`pkg-config opencv --libs`
 TARGET=exec
 OBJ=main rectangle marker
