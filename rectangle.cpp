@@ -46,8 +46,8 @@ bool Rectangle::getArea(const Image3D& image, Image& mask, const Area& searchAre
     // rate the expanded area
     rateArea(area);
 
-    std::cout << "::" << area.size << " " << area.error << std::endl;
-    return area.size > area.error * 2;
+    std::cout << "::" << area.size << " " << area.count << std::endl;
+    return area.size > area.count * 2;
 }
 
 inline bool Rectangle::isRightColor(const Color& val) const {
@@ -69,20 +69,11 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
         return;
     }
 
-    minI.resize(mask.width);
-    maxI.resize(mask.width);
-    minJ.resize(mask.height);
-    maxJ.resize(mask.height);
-    std::fill(minI.begin(), minI.end(), mask.height);
-    std::fill(maxI.begin(), maxI.end(), 0);
-    std::fill(minJ.begin(), minJ.end(), mask.width);
-    std::fill(maxJ.begin(), maxJ.end(), 0);
-
-    startIvec = mask.height;
-    endIvec = 0;
-    startJvec = mask.width;
-    endJvec = 0;
-
+    area.minI = mask.height;
+    area.maxI = 0;
+    area.minJ = mask.width;
+    area.maxJ = 0;
+    area.count = 0;
 
     std::stack<unsigned int> stackI;
     std::stack<unsigned int> stackJ;
@@ -94,25 +85,17 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
         stackI.pop();
         j = stackJ.top();
         stackJ.pop();
+        area.count ++;
 
-        // update vectors
-        if (j < startJvec)
-            startJvec = j;
-        if (j > endJvec)
-            endJvec = j;
-        if (i < startIvec)
-            startIvec = i;
-        if (i > endIvec)
-            endIvec = i;
-
-        if (i < minI[j])
-            minI[j] = i;
-        if (i > maxI[j])
-            maxI[j] = i;
-        if (j < minJ[i])
-            minJ[i] = j;
-        if (j > maxJ[i])
-            maxI[i] = j;
+        // update min and max
+        if (j < area.minJ)
+            area.minJ = j;
+        if (j > area.maxJ)
+            area.maxJ = j;
+        if (i < area.minI)
+            area.minI = i;
+        if (i > area.maxI)
+            area.maxI = i;
 
         // for each neighbors (left, right, up, down)
         for (unsigned int dir=0; dir<4; ++dir) {
@@ -128,12 +111,8 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
         }
     }
 
-    area.minI = startIvec;
-    area.maxI = endIvec;
-    area.minJ = startJvec;
-    area.maxJ = endJvec;
-    area.height = endIvec - startIvec + 1;
-    area.width = endJvec - startJvec + 1;
+    area.height = area.maxI - area.minI + 1;
+    area.width = area.maxJ - area.minJ + 1;
     area.size = area.height * area.width;
 }
 
@@ -147,37 +126,5 @@ void Rectangle::rateArea(Area& area) {
         return;
     }
 
-
-    // extract square quality from vectors
-    unsigned int minIsum = 0;
-    unsigned int maxIsum = 0;
-    unsigned int minJsum = 0;
-    unsigned int maxJsum = 0;
-    unsigned int i, j;
-    area.error = 0;
-    for (i=startIvec; i<=endIvec; ++i) {
-        minJsum += minJ[i];
-        maxJsum += maxJ[i];
-    }
-    unsigned int minJmean = minJsum / (1 + endIvec - startIvec);
-    unsigned int maxJmean = maxJsum / (1 + endIvec - startIvec);
-    for (i=startIvec; i<=endIvec; ++i) {
-        area.error += absdiff(minJmean, minJ[i]);
-        area.error += absdiff(maxJmean, maxJ[i]);
-    }
-
-    for (j=startJvec; j<=endJvec; ++j) {
-        minIsum += minI[j];
-        maxIsum += maxI[j];
-    }
-    unsigned int minImean = minIsum / (1 + endJvec - startJvec);
-    unsigned int maxImean = maxIsum / (1 + endJvec - startJvec);
-    for (j=startJvec; j<=endJvec; ++j) {
-        if (minI[j] > 0) {
-            area.error += absdiff(minImean, minI[j]);
-            area.error += absdiff(maxImean, maxI[j]);
-        }
-    }
-
-    area.rank = (area.size) / (area.error+1);
+    area.rank = (area.size) / (area.count);
 }

@@ -13,7 +13,7 @@ public:
   unsigned int size;
   unsigned int width;
   unsigned int height;
-  unsigned int error;
+  unsigned int count;
   float rank;
   inline bool isInside(unsigned int i, unsigned int j) const {
     return (i >= minI && i<= maxI &&
@@ -29,11 +29,6 @@ public:
 private:
   Color min;
   Color max;
-  //save time by keeping up those vectors used in getArea()
-  std::vector<unsigned int> minI;
-  std::vector<unsigned int> maxI;
-  std::vector<unsigned int> minJ;
-  std::vector<unsigned int> maxJ;
   unsigned int startIvec;
   unsigned int endIvec;
   unsigned int startJvec;
