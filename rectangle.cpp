@@ -4,11 +4,10 @@
 #include <iostream>
 #include <stack>
 
-Rectangle::Rectangle(const Color& min, const Color& max) : min(min), max(max) {}
+Rectangle::Rectangle(const Color& average, unsigned int radius) : average(average), radius(radius) {}
 
 bool Rectangle::getArea(const Image3D& image, Image& mask, const Area& searchArea, Area& area) {
-    std::cout << "color min :" << (int)min.v1 << " " << (int)min.v2 << " " << (int)min.v3 << std::endl;
-    std::cout << "color max :" << (int)max.v1 << " " << (int)max.v2 << " " << (int)max.v3 << std::endl;
+    std::cout << "color average :" << (int)average.v1 << " " << (int)average.v2 << " " << (int)average.v3 << std::endl;
     std::cout << "search in " << searchArea.minI << " " << searchArea.maxI << std::endl;
     std::cout << "          " << searchArea.minJ << " " << searchArea.maxJ << std::endl;
 
@@ -51,7 +50,7 @@ bool Rectangle::getArea(const Image3D& image, Image& mask, const Area& searchAre
 }
 
 inline bool Rectangle::isRightColor(const Color& val) const {
-    return min <= val && val <= max;
+    return val.v1 > 50 && average.luv_square_dist(val) < radius * radius;
 }
 
 bool Rectangle::isPixelRightColor(const Image3D& image, unsigned int i, unsigned int j) const {
@@ -117,7 +116,28 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
 }
 
 void Rectangle::rateArea(Area& area) {
-    // first verify width/height ratio to cut of the evaluation is not good enough
+    // first, minimal check on area width
+    if (area.width < MIN_AREA_WIDTH || area.width > MAX_AREA_WIDTH) {
+        area.rank = 0;
+        return;
+    }
+
+    // second, verify width/height ratio to cut of the evaluation is not good enough
+    /*
+     *          8 cm
+     * +----------------------+
+     * |   @@@@@@@@@@@@@@@@@  |
+     * |  @@@@@@@@@@@@@@@@@@  |  2.5 cm
+     * |    @@@@@@@@@@@@@@    |
+     * +----------------------+
+     *
+     * The full height (2.5 cm) is often fully seen.
+     * The full width (8 cm) is often NOT fully seen.
+     * We want that :
+     *  - the width is at least twice the height
+     *  - the width is at most 6 times the height
+     * Further checks will be done at higher level
+     */
     unsigned int ratio = area.width / area.height;
     if (ratio < 2 || ratio > 5) {
         area.rank = 0;
@@ -126,5 +146,5 @@ void Rectangle::rateArea(Area& area) {
         return;
     }
 
-    area.rank = (area.size) / (area.count);
+    area.rank = ( ( (float) (area.count) ) / ( (float) (area.size) ) );
 }

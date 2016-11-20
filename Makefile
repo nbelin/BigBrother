@@ -7,7 +7,7 @@ OBJ=main rectangle marker
 all: $(addsuffix .o, $(OBJ))
 	$(CC) $(addsuffix .o,$(OBJ)) -o $(TARGET) $(LFLAGS)
 
-%.o: %.cpp
+%.o: %.cpp %.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:

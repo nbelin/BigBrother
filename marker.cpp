@@ -4,146 +4,79 @@
 #include <cstdlib>
 #include <algorithm>
 
-Marker::Marker(bool isEnemy, Color color1min, Color color1max, Color color2min, Color color2max, std::vector<bool> binaryCode) : isEnemy(isEnemy), binaryCode(binaryCode) {
+Marker::Marker(bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) : isEnemy(isEnemy) {
 
-    rects[0] = Rectangle(color1min, color1max);
-    rects[1] = Rectangle(color2min, color2max);
+    rects[0] = rect1;
+    rects[1] = rect2;
+    rects[2] = rect3;
+    previousPos.imageID = 0;
+    previousPos.x = 0;
+    previousPos.size = 0;
+    previousPos.minI = 0;
+    previousPos.maxI = 0;
+    previousPos.confidence = 0.f;
+    previousPos.dx = 0;
+    previousPos.dsize = 0;
 
-    for (int i=0; i<2; ++i) {
+    for (int i=0; i<3; ++i) {
         masks_vec[i].resize(640 * 480);
         masks[i] = Image(640, 480, masks_vec[i].data());
     }
-
-    //sumLineBinary.resize(500);
-}
-
-void Marker::convertPositionMarker2Area(const Image3D& image, const PositionMarker& pm, Area& area, int rectID) const {
-    area.minJ = pm.x - pm.size/2;
-    area.maxJ = pm.x + pm.size/2;
-    int coef;
-    if (isEnemy) {
-        coef = 1;
-    } else {
-        coef = -1;
-    }
-    int offset;
-    if (rectID == 0) {
-        offset = 0;
-    } else {
-        offset = pm.size;
-    }
-    unsigned int approxMiddleI = image.height/2 + coef*offset;
-    area.minI = approxMiddleI - 10;
-    area.maxI = approxMiddleI + 10;
-}
-
-void Marker::convertArea2PositionMarker(const Image3D& image, const Area& area, PositionMarker& pm, int rectID) const {
-    pm.x = (area.minI + area.minI) / 2;
-    pm.size = area.minI - area.minI;
 }
 
 bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
+    //std::cout << "getNextPos !" << std::endl;
+    nextPos.reset();
     for (int i=0; i<2; ++i) {
         memset(masks[i].data, 0, masks[i].width * masks[i].height);
     }
 
-    unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2;
-    unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2;
-    if (startI < image.height && startJ < image.width &&
-            detectFromPoint(image, nextPos, startI, startJ)) {
-        return true;
+    if (isMarkerFound(previousPos)) {
+        unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2;
+        unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2;
+        detectFromPoint(image, nextPos, startI, startJ);
+        if (isMarkerFound(nextPos)) {
+            previousPos = nextPos;
+            return true;
+        }
+        std::cout << "not found 1st : " << startI << ", " << startJ << std::endl;
+        for (int di=-1; di<2; ++di) {
+            for (int dj=-1; dj<2; ++dj) {
+                detectFromPoint(image, nextPos, startI+di, startJ+dj);
+                if (isMarkerFound(nextPos)) {
+                    previousPos = nextPos;
+                    return true;
+                }
+            }
+        }
+        std::cout << "not found even after square" << std::endl;
     }
-    //std::cout << "not found 1st : " << startI << ", " << startJ << std::endl;
+
+    std::cout << "previous marker not found ?" << std::endl;
+    previousPos.reset();
+
     return detectFromZero(image, nextPos);
-
-    if (previousPos.imageID == 0) {
-        previousPos.x = image.width/2;
-        previousPos.size = image.width/10;
-        for (unsigned int i=0; i<2; ++i) {
-            convertPositionMarker2Area(image, previousPos, previousAreas[i], i);
-        }
-    }
-    int dID = image.id - previousPos.imageID;
-    std::cout << "dID = " << dID << std::endl;
-    Area resultArea;
-    for (int i=0; i<2; ++i) {
-        masks[i].reset();
-        unsigned int minJdone = previousAreas[i].minJ;
-        unsigned int maxJdone = previousAreas[i].maxJ;
-        std::cout << " :) " << i << std::endl;
-
-        while (! rects[i].getArea(image, masks[i], previousAreas[i], resultArea)) {
-            std::cout << previousAreas[i].minJ << " , " << previousAreas[i].maxJ << std::endl;
-            if (! getOtherArea(image, previousAreas[i], minJdone, maxJdone)) {
-                return false;
-            }
-        }
-
-        std::cout << resultArea.minJ << " ; " << resultArea.maxJ << std::endl;
-        std::cout << resultArea.error << " / " << resultArea.size << std::endl;
-        for (unsigned int index=0; index<masks[i].width*masks[i].height; ++index) {
-            if (masks[i].data[index] == 1) {
-                std::cout << index << " \t";
-            }
-        }
-        std::cout << "/end" << std::endl;
-        previousAreas[i] = resultArea;
-    }
-    if (absdiff(previousAreas[0].minJ, previousAreas[1].minJ) < 10 &&
-            absdiff(previousAreas[0].maxJ, previousAreas[1].maxJ) < 10) {
-        nextPos.imageID = image.id;
-        nextPos.x = (previousAreas[0].minJ + previousAreas[0].maxJ) / 2;
-        nextPos.size = previousAreas[0].maxJ - previousAreas[0].minJ;
-        nextPos.confidence = 1.f;
-        nextPos.dx = nextPos.x - previousPos.x;
-        nextPos.dsize = nextPos.size - previousPos.size;
-
-        previousPos = nextPos;
-        return true;
-    }
-    return false;
-}
-
-bool Marker::getOtherArea(const Image3D& image, Area &area, unsigned int& minJdone, unsigned int& maxJdone) {
-    unsigned int dmin = previousPos.x - minJdone;
-    unsigned int dmax = maxJdone - previousPos.x;
-    if (dmin < dmax && minJdone > 10) {
-        if (minJdone < previousPos.size)
-            area.minJ = 0;
-        else
-            area.minJ = minJdone - previousPos.size;
-
-        area.maxJ = minJdone;
-        minJdone = area.minJ;
-        return true;
-    } else if (maxJdone < image.width - 10) {
-        if (maxJdone < image.width - previousPos.size -1)
-            area.maxJ = image.width-1;
-        else
-            area.maxJ = maxJdone + previousPos.size;
-
-        area.minJ = maxJdone;
-        maxJdone = area.maxJ;
-        return true;
-    } else {
-        return false;
-    }
 }
 
 bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsigned int startI, unsigned int startJ) {
+    if (! masks[0].isInside(startI, startJ)) {
+        return false;
+    }
+
     if (masks[0].getValue(startI, startJ) == 0 && rects[0].isPixelRightColor(image, startI, startJ)) {
 
         rects[0].expandArea(image, masks[0], previousAreas[0], startI, startJ);
-        if (previousAreas[0].size < MIN_AREA_SIZE || previousAreas[0].size > MAX_AREA_SIZE) {
-            return false;
-        }
-        //reset second masks ... to FIX for perf
-        memset(masks[1].data, 0, masks[1].width * masks[1].height);
 
         rects[0].rateArea(previousAreas[0]);
-        if (previousAreas[0].rank < 1) {
+        //previousAreas[0].display();
+        if (previousAreas[0].rank < 0.6) {
             return false;
         }
+
+        //std::cout << "OK :)\n";
+
+        //reset second masks ... to FIX for perf
+        //memset(masks[1].data, 0, masks[1].width * masks[1].height);
 
         const unsigned int length = previousAreas[0].maxJ - previousAreas[0].minJ;
         const unsigned int nj = previousAreas[0].minJ + length/2;
@@ -152,36 +85,21 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
         for (unsigned int ni = startI; ni < iMax; ++ni) {
             if (rects[1].isPixelRightColor(image, ni, nj)) {
 
-                bool toDebug = false;
                 rects[1].expandArea(image, masks[1], previousAreas[1], ni, nj);
-                if (previousAreas[1].size < MIN_AREA_SIZE || previousAreas[1].size > MAX_AREA_SIZE) {
-                    return false;
-                }
 
                 rects[1].rateArea(previousAreas[1]);
-                if (previousAreas[1].rank < 1) {
-                    std::cout << previousAreas[1].rank << std::endl;
+                //previousAreas[1].display();
+                if (previousAreas[1].rank < 0.6) {
                     return false;
                 }
 
-                // std::cout << previousAreas[1].size << "\t";
-                // std::cout << previousAreas[1].minJ << "\t";
-                // std::cout << previousAreas[1].maxJ << " ? " << std::endl;
-                const unsigned int diffLeft = absdiff(previousAreas[0].minJ, previousAreas[1].minJ);
-                const unsigned int diffRight = absdiff(previousAreas[0].maxJ, previousAreas[1].maxJ);
-                const unsigned int markerHeight = previousAreas[1].maxI - previousAreas[0].minI;
-                const unsigned int markerWidth = previousAreas[0].maxJ - previousAreas[0].minJ;
-                const unsigned int diffHW = absdiff(markerHeight, markerWidth);
-                // std::cout << diffLeft << " " << diffRight << " " << diffHW << std::endl;
-                if (diffLeft < 30 && diffRight < 30 && diffHW < 40) {
-                    nextPos.imageID = image.id;
-                    nextPos.x = nj;
-                    nextPos.size = length;
-                    nextPos.confidence = previousAreas[0].rank;
-                    nextPos.dx = 0;
-                    nextPos.dsize = 0;
+                ratePositionMarker(image, nextPos);
+                if (isMarkerFound(nextPos)) {
+                    previousPos = nextPos;
                     return true;
                 }
+                std::cout << "oh almost :(" << std::endl;
+                nextPos.display();
             }
         }
     }
@@ -199,53 +117,75 @@ bool Marker::detectFromZero(const Image3D& image, PositionMarker& nextPos) {
     return false;
 }
 
-/*
-  Binary code describes the edges of the marker.
-  True means rising edge (to white).
-  False means falling edge (to black).
-  Color squares take part of the edges.
-*/
-bool Marker::checkBinary(const Image3D& image, PositionMarker& nextPos) {
-    const int THRESH_WHITE_UNIT = 160;
-    const int THRESH_BLACK_UNIT = 110;
-    const int SIZE_HALF = 5;
-    const int SIZE = 2 * SIZE_HALF + 1;
-    const int THRESH_WHITE = THRESH_WHITE_UNIT * SIZE;
-    const int THRESH_BLACK = THRESH_BLACK_UNIT * SIZE;
-    const unsigned int startJ = (previousAreas[0].minJ + previousAreas[0].maxJ) / 2 - SIZE_HALF;
-    const unsigned int endJ = (previousAreas[0].minJ + previousAreas[0].maxJ) / 2 + SIZE_HALF;
-    const unsigned int startI = (previousAreas[0].minI + previousAreas[0].maxI)/2;
-    const unsigned int endI = (previousAreas[1].minI + previousAreas[1].maxI)/2;
-    // std::cout << "checkBinary" << std::endl;
-    // std::cout << THRESH_BLACK << std::endl;
-    // std::cout << THRESH_WHITE << std::endl;
-
-    size_t index = 0;
-    bool previousComp, comp;
-    for (unsigned int i=startI; i<=endI; ++i) {
-        //sumLineBinary[i - startI] = 0;
-        int sum = 0;
-        for (unsigned int j=startJ; j<=endJ; ++j) {
-            //sumLineBinary[i - startI] += image.getV(i, j);
-            sum += image.getV(i, j);
-        }
-        //std::cout << sum << std::endl;
-        if (previousComp) { //was white, now want black
-            comp = (sum > THRESH_BLACK);
-        } else { //was black, now want white
-            comp = (sum > THRESH_WHITE);
-        }
-        //std::cout << comp << std::endl;
-        if ((index == 0 || previousComp != comp) &&
-                binaryCode[index++] != comp) {
-            // std::cout << previousComp << " " << comp << std::endl;
-            // std::cout << index << " " << binaryCode[index] << std::endl;
+bool Marker::detectFromPrevious(const Image3D& image, PositionMarker& nextPost) {
+    for (size_t id=0; id<2; ++id) {
+        const unsigned int startI = (previousAreas[id].maxI + previousAreas[id].minI)/2;
+        const unsigned int startJ = (previousAreas[id].maxJ + previousAreas[id].minJ)/2;
+        rects[id].expandArea(image, masks[id], previousAreas[id], startI, startJ);
+        rects[id].rateArea(previousAreas[id]);
+        if (previousAreas[id].rank < 0.5) {
             return false;
         }
-        previousComp = comp;
-        //std::cout << i << " " << sumLineBinary[i - startI] << std::endl;
     }
-    // std::cout << index << std::endl;
-    // std::cout << binaryCode.size() << std::endl;
-    return index == binaryCode.size();
+    ratePositionMarker(image, nextPost);
+    return nextPost.confidence > 0.2;
 }
+
+void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
+    // compute mean J interval for global marker
+    unsigned int meanMinJ = 0;
+    for (size_t id=0; id<2; ++id) {
+        meanMinJ += previousAreas[id].minJ;
+    }
+    meanMinJ /= 2;
+    unsigned int meanMaxJ = 0;
+    for (size_t id=0; id<2; ++id) {
+        meanMaxJ += previousAreas[id].maxJ;
+    }
+    meanMaxJ /= 2;
+
+    // feed most properties for PositionMarker (except confidence)
+    pm.imageID = image.id;
+    pm.x = ( meanMinJ + meanMaxJ ) / 2;
+    pm.size = meanMaxJ - meanMinJ;
+    pm.minI = previousAreas[0].minI;
+    pm.maxI = previousAreas[1].maxI;
+    if (isMarkerFound(previousPos)) {
+        pm.dx = (int)previousPos.x - (int)pm.x;
+        pm.dsize = (int)previousPos.size - (int)pm.size;
+    }
+
+    // compute difference with the mean
+    unsigned int distMinJ = 0;
+    for (size_t id=0; id<2; ++id) {
+        distMinJ += absdiff(meanMinJ, previousAreas[id].minJ);
+    }
+    unsigned int distMaxJ = 0;
+    for (size_t id=0; id<2; ++id) {
+        distMaxJ += absdiff(meanMaxJ, previousAreas[id].maxJ);
+    }
+
+    // compute difference between (mean)width and height
+    unsigned int height = pm.maxI - pm.minI;
+    unsigned int diffWidthHeight = absdiff(pm.size, height);
+
+    // compute distance from middle of image (depending enemy or not)
+    unsigned int distFromMiddle;
+    unsigned int imageMiddleHeight = image.height / 2;
+    if (isEnemy) {
+        distFromMiddle = absdiff(imageMiddleHeight, pm.maxI);
+    } else {
+        distFromMiddle = absdiff(imageMiddleHeight, pm.minI);
+    }
+
+    float confidence_distFromMiddle = 0.05f * (float) distFromMiddle / (float) pm.size;
+    float confidence_diffWidthHeight = 0.5f * (float) diffWidthHeight / (float) pm.size;
+    //std::cout << "conf_distFromMiddle=" << confidence_distFromMiddle << std::endl;
+    //std::cout << "conf_diffWidthHeight=" << confidence_diffWidthHeight << std::endl;
+    pm.confidence = 1.f - confidence_distFromMiddle - confidence_diffWidthHeight;
+}
+
+bool Marker::isMarkerFound(const PositionMarker& pm) {
+    return pm.confidence > 0.5;
+}
+
