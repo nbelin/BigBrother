@@ -2,7 +2,7 @@ CEREAL_ROOT ?= $(PWD)/../../../cereal
 
 CC=g++
 CFLAGS=-Wall -Wextra -g -Ofast -std=c++11 -I$(CEREAL_ROOT)/include
-LFLAGS=`pkg-config opencv --libs` -pthread
+LFLAGS=`pkg-config opencv --libs` -pthread -lraspicam -lraspicam_cv
 
 BUILD_DIR ?= build
 EXE_NAME = detector

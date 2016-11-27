@@ -1,20 +1,29 @@
 #ifndef VIDEO_CONTROLER_HPP
 #define VIDEO_CONTROLER_HPP
 
+#define RASPICAM
+
 #include "data.hpp"
 
 #include <thread>
 #include <string>
 #include <vector>
 #include <chrono>
+#ifdef RASPICAM
+#include <raspicam/raspicam_cv.h>
+#endif
 
 class VideoController {
 private:
     Data& data;
     cv::VideoCapture cap;
+#ifdef RASPICAM
+    raspicam::RaspiCam_Cv raspicap;
+#endif
     cv::VideoWriter writer;
     cv::VideoCapture open_cam(std::string filename);
     std::thread thread;
+    std::thread thread_writer;
     std::vector<cv::Mat> workingMats;
     int lastMatId;
     int readyMatId;
@@ -24,7 +33,8 @@ public:
 
     void update(void);
 
-    void jobGetImage(cv::VideoCapture * cap);
+    void jobGetImage(void);
+    void jobSaveImage(void);
 };
 
 #endif//VIDEO_CONTROLER_HPP
