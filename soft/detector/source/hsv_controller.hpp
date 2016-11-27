@@ -24,7 +24,9 @@ public:
         if ((data.color_choice & Color::HSV) == 0) {
             return;
         }
-        //cv::cvtColor(data.frame, data.hsv, CV_BGR2HSV);
+#if 1
+        cv::cvtColor(*data.frame, data.hsv, CV_BGR2HSV);
+#else
         for (size_t i=0; i<threads.size(); ++i) {
             unsigned int height = data.frame->rows / 4;
             unsigned int row = height * i;
@@ -37,7 +39,7 @@ public:
         for (size_t i=0; i<threads.size(); ++i) {
             threads[i].join();
         }
-
+#endif
         data.image.setData(data.hsv.data);
     }
 
