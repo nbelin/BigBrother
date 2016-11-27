@@ -75,7 +75,7 @@ while not no_wait:
 # enable raspicam, let the code continue even if the command fails
 try:
 	print "run: sudo modprobe bcm2835-v4l2"
-	subprocess.call(["sudo", "modprobe bcm2835-v4l2"])
+	subprocess.call("sudo modprobe bcm2835-v4l2", shell=True)
 except Exception as e:
 	print repr(e)
 # delay a shutdown, let the code continue even if the command fails
