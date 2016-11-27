@@ -5,6 +5,8 @@
 
 #include <thread>
 #include <string>
+#include <vector>
+#include <chrono>
 
 class VideoController {
 private:
@@ -12,15 +14,17 @@ private:
     cv::VideoCapture cap;
     cv::VideoWriter writer;
     cv::VideoCapture open_cam(std::string filename);
-    cv::Mat workingMat1;
-    cv::Mat workingMat2;
     std::thread thread;
+    std::vector<cv::Mat> workingMats;
+    int lastMatId;
+    int readyMatId;
+    static const int NBWORKMATS = 8;
 public:
     VideoController(Data& data);
 
     void update(void);
 
-    static void jobGetImage(cv::VideoCapture * cap, cv::Mat * dst);
+    void jobGetImage(cv::VideoCapture * cap);
 };
 
 #endif//VIDEO_CONTROLER_HPP

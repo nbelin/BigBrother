@@ -16,6 +16,9 @@ cv::VideoCapture VideoController::open_cam(std::string filename) {
 VideoController::VideoController(Data& data)
     : data(data) {
 
+    lastMatId = 0;
+    readyMatId = 0;
+    workingMats.resize(NBWORKMATS);
     cap = open_cam(data.input_video_filename);
 
     if(!cap.isOpened()) {
@@ -27,9 +30,10 @@ VideoController::VideoController(Data& data)
 //    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1*640);
 //    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 2*480);
 
-    thread = std::thread(jobGetImage, &cap, &workingMat2);
-    data.frame = &workingMat1;
+    thread = std::thread(&VideoController::jobGetImage, this, &cap);
+    data.frame = & workingMats[NBWORKMATS - 1];
     cap >> * data.frame;
+    lastMatId = NBWORKMATS - 1;
 
     // This first (dummy) image is used to initialize buffers in Classes
     data.image = Image3D(data.frame->cols, data.frame->rows, NULL);
@@ -54,12 +58,12 @@ VideoController::VideoController(Data& data)
 }
 
 void VideoController::update(void) {
-    thread.join();
-    if (data.image.id % 2 == 0) {
-        data.frame = & workingMat1;
-    } else {
-        data.frame = & workingMat2;
+    while (lastMatId == readyMatId) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+
+    data.frame = & workingMats[readyMatId];
+    lastMatId = readyMatId;
 
     if (data.frame->empty()) {
         std::cout << "Video ends" << std::endl;
@@ -68,14 +72,13 @@ void VideoController::update(void) {
     if (writer.isOpened()) {
         writer << *data.frame;
     }
-
-    if (data.image.id % 2 == 0) {
-        thread = std::thread(jobGetImage, &cap, &workingMat2);
-    } else {
-        thread = std::thread(jobGetImage, &cap, &workingMat1);
-    }
 }
 
-void VideoController::jobGetImage(cv::VideoCapture *cap, cv::Mat * dst) {
-    *cap >> *dst;
+void VideoController::jobGetImage(cv::VideoCapture *cap) {
+    while (true) {
+        for (size_t i=0; i<NBWORKMATS; ++i) {
+            *cap >> workingMats[i];
+            readyMatId = i;
+        }
+    }
 }
