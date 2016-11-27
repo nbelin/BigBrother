@@ -58,6 +58,7 @@ arg_marker = ""
 # wait for game to start
 print ""
 print "Listenning port " + str(UDP_PORT) + "..."
+sys.stdout.flush()
 while not no_wait:
 	try:
 		print "nb_retry: ", nb_retry
@@ -70,6 +71,7 @@ while not no_wait:
 	except Exception as e:
 		print repr(e)
 		pass
+	sys.stdout.flush()
 	nb_retry += 1
 
 # enable raspicam, let the code continue even if the command fails
@@ -85,6 +87,7 @@ try:
 	print "!! The system will shutdown in 110 seconds, kill the sleep process to abort the shutdown !!"
 except Exception as e:
 	print repr(e)
+sys.stdout.flush()
 
 # prepare directories
 output_dir_template = "../results/"
@@ -93,6 +96,7 @@ try:
 	os.mkdir(output_dir_template)
 except Exception as e:
 	print repr(e)
+sys.stdout.flush()
 
 # try in loop to create a new dir for this game
 while True:
@@ -104,6 +108,7 @@ while True:
 		print repr(e)
 		pass
 	break
+sys.stdout.flush()
 
 # run main process
 command_line_template = "../build/detector"
@@ -116,6 +121,7 @@ for i in range(20):
 	print "run: ", command_line
 	print "stdout: ", stdout_str
 	print "stderr: ", stderr_str
+	sys.stdout.flush()
 	ret = 123
         with open(stdout_str, "w") as stdout_file:
         	with open(stderr_str, "w") as stderr_file:

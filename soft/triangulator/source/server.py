@@ -441,6 +441,7 @@ if wait_game:
 	arg_markers = ""
 
 	print "Waiting for game to start... (port " + str(UDP_PORT_START_LISTEN) + ")"
+	sys.stdout.flush()
 	while True:
 		try:
 			#arg_markers = "123"  # uncomment to test if no robot is up
@@ -451,6 +452,7 @@ if wait_game:
 				break
 		except Exception as e:
 			print repr(e)
+		sys.stdout.flush()
 	
 	print "arg_markers: ", arg_markers
 	for i in range(4):
@@ -459,6 +461,7 @@ if wait_game:
 			sock_start_write.sendto("GO " + arg_markers, (UDP_ADDR_START_WRITE, UDP_PORT_START_WRITE))
 		except Exception as e:
 			print repr(e)
+		sys.stdout.flush()
 		time.sleep(0.2)
 
 
@@ -467,6 +470,7 @@ if use_gui:
 
 print ""
 print "Listenning port " + str(UDP_PORT) + "..."
+sys.stdout.flush()
 while True:
 	time.sleep(0.05) # avoid to burn 100% CPU... and give a chance to a CtrlC :)
 	try:
@@ -496,6 +500,7 @@ while True:
 			cam_id = int(data[0])
 			cameras[cam_id].update(data, now)
 		#cameras[cam_id].debug()
+		sys.stdout.flush()
 
 		# listen to any client who wants information
 	except Exception as e:
