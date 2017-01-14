@@ -7,7 +7,7 @@
 #include "rectangle.hpp"
 #include "list.hpp"
 #include "marker.hpp"
-#include "def_colors.hpp"
+#include "../config/def_colors.hpp"
 
 //#define VIDEO "sample/2015-06-06-172737.webm"
 //#define VIDEO "sample/2015-06-06 17.29.40.mov"
