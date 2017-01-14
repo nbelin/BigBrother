@@ -6,51 +6,8 @@
 
 Rectangle::Rectangle(const Color& average, unsigned int radius) : average(average), radius(radius) {}
 
-bool Rectangle::getArea(const Image3D& image, Image& mask, const Area& searchArea, Area& area) {
-    std::cout << "color average :" << (int)average.v1 << " " << (int)average.v2 << " " << (int)average.v3 << std::endl;
-    std::cout << "search in " << searchArea.minI << " " << searchArea.maxI << std::endl;
-    std::cout << "          " << searchArea.minJ << " " << searchArea.maxJ << std::endl;
-
-    unsigned int i = (searchArea.minI + searchArea.maxI) / 2;
-    unsigned int j = (searchArea.minJ + searchArea.maxJ) / 2;
-
-    if (! isRightColor(image.getValue(i, j))) {
-        return false;
-    }
-
-    if (! mask.isInside(i, j)) {
-        i = 0;
-        j = 0;
-    }
-
-    // find approximate top-left corner of the area
-    /*while (mask.isInside(i-1, j-1) && isPixelRightColor(image, i-1, j-1)) {
-    i--;
-    j--;
-    }*/
-
-    // make sure we start on the right color
-    /*while (searchArea.isInside(i, j) && ! isPixelRightColor(image, i, j)) {
-    i++;
-    j++;
-    }*/
-
-    if (! mask.isInside(i, j)) {
-        return false;
-    }
-
-    // expand area while updating mask and vectors
-    expandArea(image, mask, area, i, j);
-
-    // rate the expanded area
-    rateArea(area);
-
-    std::cout << "::" << area.size << " " << area.count << std::endl;
-    return area.size > area.count * 2;
-}
-
 inline bool Rectangle::isRightColor(const Color& val) const {
-    return val.v1 > 50 && average.luv_square_dist(val) < radius * radius;
+    return val.v1 > 10 && average.luv_square_dist(val) < radius * radius;
 }
 
 bool Rectangle::isPixelRightColor(const Image3D& image, unsigned int i, unsigned int j) const {
@@ -61,7 +18,7 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
     //direction is : LEFT, RIGHT, UP, DOWN
     static const int DIRI[] = {-1,  1,  0,  0};
     static const int DIRJ[] = { 0,  0, -1,  1};
-    static const Color MAXDIFFCOLOR = Color(30, 200, 200);
+    static const Color MAXDIFFCOLOR = Color(1, 1, 1);
 
     if (isPixelRightColor(image, i, j) == 0) {
         area.size = 0;
@@ -102,7 +59,8 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
             int nj = j+DIRJ[dir];
 
             //if not visited yet AND is right color AND diff color is not too important
-            if (mask.isInside(ni, nj) && mask.getValue(ni, nj) == 0 && isPixelRightColor(image, ni, nj) && (true || image.differenceAbsColor(i, j, ni, nj) <= MAXDIFFCOLOR)) {
+            if ((mask.isInside(ni, nj) && mask.getValue(ni, nj) == 0) &&
+                    (isPixelRightColor(image, ni, nj)|| image.differenceAbsColor(i, j, ni, nj) <= MAXDIFFCOLOR)) {
                 stackI.push(ni);
                 stackJ.push(nj);
                 mask.setValue(ni, nj, 1);

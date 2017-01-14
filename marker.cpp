@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <algorithm>
 
-Marker::Marker(bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) : isEnemy(isEnemy) {
+Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) : isEnemy(isEnemy) {
 
     rects[0] = rect1;
     rects[1] = rect2;
@@ -19,8 +19,8 @@ Marker::Marker(bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, con
     previousPos.dsize = 0;
 
     for (int i=0; i<3; ++i) {
-        masks_vec[i].resize(640 * 480);
-        masks[i] = Image(640, 480, masks_vec[i].data());
+        masks_vec[i].resize(firstImage.width * firstImage.height);
+        masks[i] = Image(firstImage.width, firstImage.height, masks_vec[i].data());
     }
 }
 
@@ -28,7 +28,7 @@ bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
     //std::cout << "getNextPos !" << std::endl;
     nextPos.reset();
     for (int i=0; i<2; ++i) {
-        memset(masks[i].data, 0, masks[i].width * masks[i].height);
+        masks[i].reset();
     }
 
     if (isMarkerFound(previousPos)) {
@@ -76,7 +76,7 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
         //std::cout << "OK :)\n";
 
         //reset second masks ... to FIX for perf
-        //memset(masks[1].data, 0, masks[1].width * masks[1].height);
+        //masks[1].reset();
 
         const unsigned int length = previousAreas[0].maxJ - previousAreas[0].minJ;
         const unsigned int nj = previousAreas[0].minJ + length/2;
@@ -128,7 +128,12 @@ bool Marker::detectFromPrevious(const Image3D& image, PositionMarker& nextPost) 
         }
     }
     ratePositionMarker(image, nextPost);
-    return nextPost.confidence > 0.2;
+    if (isMarkerFound(nextPost)) {
+        previousPos = nextPost;
+        return true;
+    }
+    previousPos.reset();
+    return false;
 }
 
 void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {

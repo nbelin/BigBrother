@@ -9,9 +9,10 @@
 #include "marker.hpp"
 #include "def_colors.hpp"
 
-#define VIDEO "sample/2015-06-06-172737.webm"
+//#define VIDEO "sample/2015-06-06-172737.webm"
 //#define VIDEO "sample/2015-06-06 17.29.40.mov"
 //#define VIDEO "sample/2015-06-06-174454.webm"
+#define VIDEO "sample/test.mp4"
 
 int main(int argc, char* argv[]) {
   std::cout << "GO" << std::endl;
@@ -26,17 +27,14 @@ int main(int argc, char* argv[]) {
   Image3D image(frame.cols, frame.rows, NULL);
 
   Rectangle dummyRect;
-  //Marker marker1(false, yellowMin, yellowMax, redMin, redMax, binary);
-  Marker marker1(false, yellowRect, redRect, dummyRect);
+  //Marker marker1(image, false, yellowRect, redRect, dummyRect);
+  Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
   PositionMarker pm1;
-  //Marker marker2(false, redMin, redMax, yellowMin, yellowMax, binary);
-  Marker marker2(false, redRect, yellowRect, dummyRect);
+  Marker marker2(image, false, redRect, yellowRect, dummyRect);
   PositionMarker pm2;
-  //Marker marker3(false, greenMin, greenMax, blueMin, blueMax, binary);
-  Marker marker3(true, greenRect, blueRect, dummyRect);
+  Marker marker3(image, true, greenRect, blueRect, dummyRect);
   PositionMarker pm3;
-  //Marker marker4(false, blueMin, blueMax, greenMin, greenMax, binary);
-  Marker marker4(true, blueRect, greenRect, dummyRect);
+  Marker marker4(image, true, blueRect, greenRect, dummyRect);
   PositionMarker pm4;
 
 
@@ -58,11 +56,11 @@ int main(int argc, char* argv[]) {
         std::cout << "NOP (1)" << std::endl;
     }
 
-    result = marker2.getNextPos(image, pm2);
-    if (!result) {
-        std::cout << "POS " << count << std::endl;
-        std::cout << "NOP (2)" << std::endl;
-    }
+//    result = marker2.getNextPos(image, pm2);
+//    if (!result) {
+//        std::cout << "POS " << count << std::endl;
+//        std::cout << "NOP (2)" << std::endl;
+//    }
 
 //    result = marker3.getNextPos(image, pm3);
 //    if (!result) {
@@ -76,13 +74,13 @@ int main(int argc, char* argv[]) {
 //        std::cout << "NOP (4)" << std::endl;
 //    }
 
-//     Image &mask = marker1.masks[0];
-//     for (unsigned int im=0; im<mask.height; ++im) {
-//       for (unsigned int jm=0; jm<mask.width; ++jm) {
-//        if (mask.getValue(im, jm) == 1)
-//          cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(255, 0, 0));
-//       }
-//     }
+     Image &mask = marker1.masks[0];
+     for (unsigned int im=0; im<mask.height; ++im) {
+       for (unsigned int jm=0; jm<mask.width; ++jm) {
+        if (mask.getValue(im, jm) == 1)
+          cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(255, 0, 0));
+       }
+     }
 
 //    Image &mask1 = marker3.masks[0];
 //    for (unsigned int im=0; im<mask1.height; ++im) {
@@ -104,7 +102,7 @@ int main(int argc, char* argv[]) {
 //    cv::line(frame, cv::Point(565, 220), cv::Point(575, 230), cv::Scalar(0, 0, 255));
     cv::imshow("img", frame);
     cv::waitKey(10);
-    if (count > 472 && count < 480)
+    if (count > 472 && count < 475)
        cv::waitKey(1000);
     // if (count > 2250)
     //   cv::waitKey(2);

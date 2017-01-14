@@ -30,7 +30,6 @@ class Rectangle {
 public:
   Rectangle(void) {}
   Rectangle(const Color& average, unsigned int radius);
-  bool getArea(const Image3D& image, Image& mask, const Area& searchArea, Area& area);
 private:
   Color average;
   unsigned int radius;

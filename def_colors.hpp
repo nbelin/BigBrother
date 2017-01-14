@@ -12,9 +12,18 @@ Color blueMax(80, 255, 255);
 
 Color red_luv(148, 127, 107);
 Rectangle redRect(red_luv, 30);
+
 Color yellow_luv(202, 103, 208);
 Rectangle yellowRect(yellow_luv, 40);
+
 Color blue_luv(200, 59, 86);
 Rectangle blueRect(blue_luv, 30);
+
 Color green_luv(200, 66, 161);
 Rectangle greenRect(green_luv, 30);
+
+Color dark_blue_luv(47, 95, 85);
+Rectangle darkBlueRect(dark_blue_luv, 40);
+
+Color magenta_luv(70, 139, 139);
+Rectangle magentaRect(magenta_luv, 40);
