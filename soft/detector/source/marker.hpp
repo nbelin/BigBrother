@@ -1,10 +1,14 @@
+#ifndef MARKER_HPP
+#define MARKER_HPP
+
 #include "image.hpp"
 #include "rectangle.hpp"
 #include <vector>
 
 class PositionMarker {
 public:
-  PositionMarker(void) : imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
+  PositionMarker(int pmID) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
+  unsigned int pmID;
   unsigned int imageID;
   unsigned int x;
   unsigned int size;
@@ -55,3 +59,4 @@ private:
 
 };
 
+#endif //MARKER_HPP

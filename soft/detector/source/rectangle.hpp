@@ -1,5 +1,5 @@
-#ifndef RECTANGLE_H
-#define RECTANGLE_H
+#ifndef RECTANGLE_HPP
+#define RECTANGLE_HPP
 
 #include <vector>
 #include "image.hpp"
@@ -47,4 +47,4 @@ public:
 };
 
 
-#endif //RECTANGLE_H
+#endif //RECTANGLE_HPP

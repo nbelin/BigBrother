@@ -7,12 +7,14 @@
 #include "rectangle.hpp"
 #include "list.hpp"
 #include "marker.hpp"
+#include "communication.hpp"
 #include "../config/def_colors.hpp"
+#include "../config/client.hpp"
 
 //#define VIDEO "sample/2015-06-06-172737.webm"
 //#define VIDEO "sample/2015-06-06 17.29.40.mov"
 //#define VIDEO "sample/2015-06-06-174454.webm"
-#define VIDEO "sample/test.mp4"
+#define VIDEO "../../sample/test.mp4"
 
 int main(int argc, char* argv[]) {
   std::cout << "GO" << std::endl;
@@ -29,14 +31,15 @@ int main(int argc, char* argv[]) {
   Rectangle dummyRect;
   //Marker marker1(image, false, yellowRect, redRect, dummyRect);
   Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
-  PositionMarker pm1;
+  PositionMarker pm1(0);
   Marker marker2(image, false, redRect, yellowRect, dummyRect);
-  PositionMarker pm2;
+  PositionMarker pm2(1);
   Marker marker3(image, true, greenRect, blueRect, dummyRect);
-  PositionMarker pm3;
+  PositionMarker pm3(2);
   Marker marker4(image, true, blueRect, greenRect, dummyRect);
-  PositionMarker pm4;
+  PositionMarker pm4(3);
 
+  Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
 
   std::cout << "start loop" << std::endl;
   int count = 0;
@@ -101,12 +104,19 @@ int main(int argc, char* argv[]) {
 //    cv::line(frame, cv::Point(pm1.x - pm1.size/2, 183), cv::Point(pm1.x + pm1.size/2, 211), cv::Scalar(0, 0, 255));
 //    cv::line(frame, cv::Point(565, 220), cv::Point(575, 230), cv::Scalar(0, 0, 255));
     cv::imshow("img", frame);
-    cv::waitKey(10);
+    cv::waitKey(100);
     if (count > 472 && count < 475)
        cv::waitKey(1000);
     // if (count > 2250)
     //   cv::waitKey(2);
     
     count++;
+
+    comm.prepareMessage(&pm1);
+    comm.prepareMessage(&pm2);
+    comm.prepareMessage(&pm3);
+    comm.prepareMessage(&pm4);
+    comm.sendMessage();
+    comm.resetMessage();
   }
 }

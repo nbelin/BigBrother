@@ -4,7 +4,7 @@ LFLAGS=`pkg-config opencv --libs`
 TARGET=exec
 SOURCE_REP=source/
 BUILD_REP=build/
-OBJ=main rectangle marker
+OBJ=main rectangle marker communication
 
 all: $(addsuffix .o, $(addprefix $(BUILD_REP), $(OBJ)))
 	$(CC) $^ -o $(BUILD_REP)$(TARGET) $(LFLAGS)

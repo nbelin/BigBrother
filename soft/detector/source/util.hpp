@@ -1,4 +1,4 @@
-#ifndef UTIL_HPP    
+#ifndef UTIL_HPP
 #define UTIL_HPP
 
 inline unsigned int absdiff(unsigned int a, unsigned int b) {
