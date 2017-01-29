@@ -32,6 +32,8 @@ cv::VideoCapture open_cam(int argc, char* argv[]) {
 
 int main(int argc, char* argv[]) {
     cv::VideoCapture cap = open_cam(argc, argv) ;
+    Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
+    GUI gui;
 
     if(!cap.isOpened()) {  // check if we succeeded
         std::cout << "Failed to open video" << std::endl;
@@ -46,13 +48,8 @@ int main(int argc, char* argv[]) {
     Image3D image(frame.cols, frame.rows, NULL);
 
     Rectangle dummyRect;
-    //Marker marker1(image, false, yellowRect, redRect, dummyRect);
-    //Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
     Marker marker1(image, true, darkBlueRect, greenRect, magentaRect);
     PositionMarker pm1(0);
-
-    Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
-    GUI gui;
 
     std::cout << "start loop" << std::endl;
     int count = 0;
