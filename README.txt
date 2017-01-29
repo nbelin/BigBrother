@@ -75,9 +75,10 @@ Finally, when searching unexisting robots in a picture can be very expensive. Bi
 
 3- diagram (plantUML)
 
-     ┌──────┐                             ┌──────────┐                            ┌───────┐          ┌───────┐     
-     │Robots│                             │BigBrother│                            │Camera1│          │Camera2│     
-     └──┬───┘                             └────┬─────┘                            └───┬───┘          └───┬───┘     
+                                          ┌──────────────────────────── BigBrother ────────────────────────────┐
+     ┌──────┐                               ┌──────┐                              ┌───────┐          ┌───────┐     
+     │Robots│                               │Server│                              │Camera1│          │Camera2│     
+     └──┬───┘                               └──┬───┘                              └───┬───┘          └───┬───┘     
         │                                      │                                      │                  │         
         │                                  ╔═══╧══════════════════════╗               │                  │         
 ════════╪══════════════════════════════════╣ Start up (loop until ok) ╠═══════════════╪══════════════════╪═════════
@@ -113,7 +114,7 @@ Finally, when searching unexisting robots in a picture can be very expensive. Bi
         │                                      │ <────────────────────────────────────────────────────────         
         │                                      │                                      │                  │         
         │                                      │────┐                                 │                  │         
-        │                                      │    │ triangulation                   │                  │         
+        │                                      │    │ triangulation (every x ms)      │                  │         
         │                                      │<───┘                                 │                  │         
         │                                      │                                      │                  │         
         │     robot(s) detected (x,y-level)    │                                      │                  │         
@@ -141,6 +142,6 @@ Finally, when searching unexisting robots in a picture can be very expensive. Bi
         │                                      │                                      │                  │         
         │                  ok                  │                                      │                  │         
         │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─                                      │                  │         
-     ┌──┴───┐                             ┌────┴─────┐                            ┌───┴───┐          ┌───┴───┐     
-     │Robots│                             │BigBrother│                            │Camera1│          │Camera2│     
-     └──────┘                             └──────────┘                            └───────┘          └───────┘     
+     ┌──┴───┐                               ┌──┴───┐                              ┌───┴───┐          ┌───┴───┐     
+     │Robots│                               │Server│                              │Camera1│          │Camera2│     
+     └──────┘                               └──────┘                              └───────┘          └───────┘     
