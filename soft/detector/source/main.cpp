@@ -5,19 +5,12 @@
 
 #include "image.hpp"
 #include "rectangle.hpp"
-#include "list.hpp"
 #include "marker.hpp"
 #include "communication.hpp"
 #include "../config/def_colors.hpp"
 #include "../config/client.hpp"
 
 #include "gui.hpp"
-
-//#define VIDEO "sample/2015-06-06-172737.webm"
-//#define VIDEO "sample/2015-06-06 17.29.40.mov"
-//#define VIDEO "sample/2015-06-06-174454.webm"
-//#define VIDEO "../../sample/test.mp4"
-#define VIDEO 0
 
 cv::VideoCapture open_cam(int argc, char* argv[]) {
     if(argc > 1) {
