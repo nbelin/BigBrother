@@ -46,3 +46,101 @@ Depending of the previous position of the robot, a threshold can be applied to d
 Similarly, a threshold can be applied on the 3 positions found to discard a camera probably falsy.
 Finaly, the robot is located between the 3 points of intersection of the vectors found be the cameras.
 
+
+# Communication between Raspberry Pies
+
+1- introduction
+
+Computer vision is power expensive, we don't want the Raspberry Pies to burn 100% CPU for 15 minutes whereas a robot battle lasts 90 seconds. Moreover, if Raspberry Pies know when to properly shutdown, it reduces the risk to corrupt the SD cards in case we shut the power supply while the Rasp are running.
+This leads us to find a way to make the Raspberry Pies know when the battle starts, and when it's over.
+
+Another point to raise is which technology to use? TCP vs UDP vs other?
+TCP can hugely increase the latency, especially if packet loss is high. We expect information to be sent to the robots at least 10 times per second. If sometimes information is lost, this should not be an issue. That is why UDP seems more appropriate than TCP.
+CoAP is a protocol optimised for the IoT, and uses UDP. It could be a good candidate for the communication between the Rasps.
+
+As packet loss could be high, the robots should be able to receive information without having to ask for it. It reduces the number of messages that must be sent. Hence, BigBrother has to know the IP addresses of the robots.
+However, for debug purpose, BigBrother could send information to whoever asks for it (or an alterive would be that BigBrother can broadcast information, allowing debug clients to receive information).
+
+A robot may want user-friendly information (x,y position for each robot), or raw information (view angle from each camera) in order to be able to do more complex operations.
+
+Finally, when searching unexisting robots in a picture can be very expensive. BigBrother would be more efficient if it knows exactly which robots are on the table.
+
+2- summarize
+
+- Still need to investigate communication technologies
+- Robots must be able to send messages to BigBrother (battle starts, battle is over, which robots to search for, etc.), and make sure such messages have been received
+- BigBrother must send information to robots
+- Sent information should be configurable (x,y or view angle)
+- BigBrother should listen for debug clients who request for information
+
+3- diagram (plantUML)
+
+     ┌──────┐                             ┌──────────┐                            ┌───────┐          ┌───────┐     
+     │Robots│                             │BigBrother│                            │Camera1│          │Camera2│     
+     └──┬───┘                             └────┬─────┘                            └───┬───┘          └───┬───┘     
+        │                                      │                                      │                  │         
+        │                                  ╔═══╧══════════════════════╗               │                  │         
+════════╪══════════════════════════════════╣ Start up (loop until ok) ╠═══════════════╪══════════════════╪═════════
+        │                                  ╚═══╤══════════════════════╝               │                  │         
+        │                                      │                                      │                  │         
+        │ battle starts (marker list to detect)│                                      │                  │         
+        │ ─────────────────────────────────────>                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                      │ battle starts (marker list to detect)│                  │         
+        │                                      │ ─────────────────────────────────────>                  │         
+        │                                      │                                      │                  │         
+        │                                      │                  ok                  │                  │         
+        │                                      │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─                  │         
+        │                                      │                                      │                  │         
+        │                                      │          battle starts (marker list to detect)          │         
+        │                                      │ ────────────────────────────────────────────────────────>         
+        │                                      │                                      │                  │         
+        │                                      │                            ok        │                  │         
+        │                                      │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─          
+        │                                      │                                      │                  │         
+        │                  ok                  │                                      │                  │         
+        │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                      │     ╔══════╗                         │                  │         
+════════╪══════════════════════════════════════╪═════╣ Loop ╠═════════════════════════╪══════════════════╪═════════
+        │                                      │     ╚══════╝                         │                  │         
+        │                                      │                                      │                  │         
+        │                                      │   marker(s) detected (pixel-level)   │                  │         
+        │                                      │ <─────────────────────────────────────                  │         
+        │                                      │                                      │                  │         
+        │                                      │             marker(s) detected (pixel-level)            │         
+        │                                      │ <────────────────────────────────────────────────────────         
+        │                                      │                                      │                  │         
+        │                                      │────┐                                 │                  │         
+        │                                      │    │ triangulation                   │                  │         
+        │                                      │<───┘                                 │                  │         
+        │                                      │                                      │                  │         
+        │     robot(s) detected (x,y-level)    │                                      │                  │         
+        │ <─────────────────────────────────────                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                  ╔═══╧══════════════════════╗               │                  │         
+════════╪══════════════════════════════════╣ Clean up (loop until ok) ╠═══════════════╪══════════════════╪═════════
+        │                                  ╚═══╤══════════════════════╝               │                  │         
+        │                                      │                                      │                  │         
+        │              battle ends             │                                      │                  │         
+        │ ─────────────────────────────────────>                                      │                  │         
+        │                                      │                                      │                  │         
+        │                                      │              battle ends             │                  │         
+        │                                      │ ─────────────────────────────────────>                  │         
+        │                                      │                                      │                  │         
+        │                                      │                  ok                  │                  │         
+        │                                      │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─                  │         
+        │                                      │                                      │                  │         
+        │                                      │                       battle ends    │                  │         
+        │                                      │ ────────────────────────────────────────────────────────>         
+        │                                      │                                      │                  │         
+        │                                      │                            ok        │                  │         
+        │                                      │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─          
+        │                                      │                                      │                  │         
+        │                  ok                  │                                      │                  │         
+        │ <─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─                                      │                  │         
+     ┌──┴───┐                             ┌────┴─────┐                            ┌───┴───┐          ┌───┴───┐     
+     │Robots│                             │BigBrother│                            │Camera1│          │Camera2│     
+     └──────┘                             └──────────┘                            └───────┘          └───────┘     
