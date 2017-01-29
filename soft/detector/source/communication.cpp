@@ -5,7 +5,7 @@
 #include <cassert>
 #include <unistd.h>
 
-Communication::Communication(const int cameraId, const char * const serverIp, const short serverPort) : cameraId(cameraId), nbMarkers(0)
+Communication::Communication(Data& data, const int cameraId, const char * const serverIp, const short serverPort) : cameraId(cameraId), nbMarkers(0), data(data)
 {
     socketId = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     assert (socketId >= 0);
@@ -59,4 +59,9 @@ void Communication::sendMessage()
 void Communication::resetMessage()
 {
     nbMarkers = 0;
+}
+
+void Communication::update(void) {
+    sendMessage();
+    resetMessage();
 }

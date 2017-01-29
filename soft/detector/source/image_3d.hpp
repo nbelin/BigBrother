@@ -4,6 +4,7 @@
 class Image3D {
 public:
   Image3D(unsigned int width, unsigned int height, unsigned char* data) : width(width), height(height), data(data) {}
+  Image3D(const Image3D& other) : width(other.width), height(other.height), data(other.data) {}
   Color differenceAbsColor(unsigned int i1, unsigned int j1, unsigned int i2, unsigned int j2) const;
   Color getValue(unsigned int i, unsigned int j) const;
   Color getValue(unsigned int index) const;

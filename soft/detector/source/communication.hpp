@@ -6,13 +6,17 @@
 
 #include "marker.hpp"
 
+#include "data.hpp"
+
 class Communication {
 public:
-    Communication(const int cameraId, const char * const serverIp, const short serverPort);
+    Communication(Data& data, const int cameraId, const char * const serverIp, const short serverPort);
     virtual ~Communication();
     void prepareMessage(const PositionMarker * pm);
     void sendMessage();
     void resetMessage();
+public:
+    void update(void);
 private:
     int cameraId;
     int socketId;
@@ -21,6 +25,7 @@ private:
     char buffer [BUFFLEN];
     int nbMarkers;
     const PositionMarker* posMarkers[4];
+    Data& data;
 };
 
 #endif //COMMUNCATION_HPP

@@ -2,7 +2,7 @@
 #define DATA_HPP
 
 #include "image.hpp"
-#include "position_marker.hpp"
+#include "marker.hpp"
 
 #include <vector>
 
@@ -10,8 +10,10 @@
 
 struct Data {
     cv::Mat frame;
-    Image image;
+    cv::Mat hsv;
+    Image3D image = {0,0,NULL};
     std::vector<PositionMarker> pm;
+    std::vector<Marker> marker;
 };
 
 #endif//DATA_HPP

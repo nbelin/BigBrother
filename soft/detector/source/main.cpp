@@ -24,61 +24,74 @@ cv::VideoCapture open_cam(int argc, char* argv[]) {
     }
 }
 
-int main(int argc, char* argv[]) {
-    cv::VideoCapture cap = open_cam(argc, argv) ;
-    Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
-    GUI gui;
+class VideoController {
+private:
+    Data& data;
+    cv::VideoCapture cap;
+public:
+    VideoController(Data& data, int argc, char* argv[])
+        : data(data), cap(open_cam(argc, argv)) {
 
-    if(!cap.isOpened()) {  // check if we succeeded
-        std::cout << "Failed to open video" << std::endl;
-        return -1;
+        if(!cap.isOpened()) {  // check if we succeeded
+            std::cout << "Failed to open video" << std::endl;
+           exit(-1);
+        }
+
+        cap >> data.frame;
+
+        // This first (dummy) image is used to initialize buffers in Classes
+        data.image = Image3D(data.frame.cols, data.frame.rows, NULL);
+        data.marker.push_back(Marker(data.image, true, darkBlueRect, greenRect, magentaRect));
+        data.pm.push_back(PositionMarker(0));
     }
 
-    cv::Mat frame;
-    cv::Mat hsv;
-    cap >> frame;
+    void update(void) {
+        cap >> data.frame;
+    }
+};
 
-    // This first (dummy) image is used to initialize buffers in Classes
-    Image3D image(frame.cols, frame.rows, NULL);
-
-    Rectangle dummyRect;
-    Marker marker1(image, true, darkBlueRect, greenRect, magentaRect);
-    PositionMarker pm1(0);
-
-    std::cout << "start loop" << std::endl;
+class DetectorController {
+private:
+    Data& data;
     int count = 0;
-    while(1) {
-        cap >> frame; // get a new frame from camera
-        cv::cvtColor(frame, hsv, CV_BGR2Luv);
-        image.setData(hsv.data);
-        image.id = count;
+public:
+    DetectorController(Data& data)
+        : data(data) {
+    }
+
+    void update(void) {
+        cv::cvtColor(data.frame, data.hsv, CV_BGR2Luv);
+        data.image.setData(data.hsv.data);
+        data.image.id = count;
 
         if (count % 20 == 0)
             std::cout << "NEXT POS " << count << std::endl;
         bool result;
 
-        result = marker1.getNextPos(image, pm1);
+        result = data.marker[0].getNextPos(data.image, data.pm[0]);
         if (result) {
-            comm.prepareMessage(&pm1);
+            //comm.prepareMessage(&data.pm[0]);
         } else {
             std::cout << "POS " << count << std::endl;
             std::cout << "NOP (1)" << std::endl;
         }
-
-        gui.setFrame(frame);
-        // debug detected pixels for given marker/color
-        gui.addMask(marker1.masks[0]);
-        gui.addMask(marker1.masks[1]);
-        gui.addMask(marker1.masks[2]);
-        // show detected markers
-        gui.addRectangle(pm1);
-
-        // show the final image
-        gui.update();
-
         count++;
+    }
+};
 
-        comm.sendMessage();
-        comm.resetMessage();
+int main(int argc, char* argv[]) {
+    Data data;
+
+    VideoController video(data, argc, argv);
+    DetectorController detector(data);
+    GUI gui(data);
+    Communication comm(data, CAMERA_ID, SERVER_IP, SERVER_PORT);
+
+    std::cout << "start loop" << std::endl;
+    while(1) {
+        video.update(); // get a new frame from camera
+        detector.update();
+        gui.update();
+        comm.update();
     }
 }

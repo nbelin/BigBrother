@@ -5,14 +5,18 @@
 #include "marker.hpp"
 #include "image.hpp"
 
+#include "data.hpp"
+
 class GUI {
 private:
-    cv::Mat* _frame;
-public:
-    GUI(void);
-    void setFrame(cv::Mat& frame);
+    Data& data;
+
+private:
     void addRectangle(const PositionMarker& pm);
     void addMask(const Image& msk);
+
+public:
+    GUI(Data& data);
     void update(void);
 };
 
