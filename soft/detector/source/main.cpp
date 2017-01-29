@@ -11,6 +11,8 @@
 #include "../config/def_colors.hpp"
 #include "../config/client.hpp"
 
+#include "gui.hpp"
+
 //#define VIDEO "sample/2015-06-06-172737.webm"
 //#define VIDEO "sample/2015-06-06 17.29.40.mov"
 //#define VIDEO "sample/2015-06-06-174454.webm"
@@ -47,7 +49,9 @@ int main(int argc, char* argv[]) {
     Marker marker4(image, true, blueRect, greenRect, dummyRect);
     PositionMarker pm4(3);
 #endif
+
     Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
+    GUI gui;
 
     std::cout << "start loop" << std::endl;
     int count = 0;
@@ -95,45 +99,16 @@ int main(int argc, char* argv[]) {
         }
 #endif
 
+        gui.setFrame(frame);
         // debug detected pixels for given marker/color
-        Image &mask = marker1.masks[0];
-        for (unsigned int im=0; im<mask.height; ++im) {
-            for (unsigned int jm=0; jm<mask.width; ++jm) {
-                if (mask.getValue(im, jm) == 1) {
-                    cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(255, 0, 0));
-                }
-            }
-        }
-        Image &mask1 = marker1.masks[1];
-        for (unsigned int im=0; im<mask1.height; ++im) {
-            for (unsigned int jm=0; jm<mask1.width; ++jm) {
-                if (mask1.getValue(im, jm) == 1) {
-                    cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(0, 255, 0));
-                }
-            }
-        }
-        Image &mask2 = marker1.masks[2];
-        for (unsigned int im=0; im<mask2.height; ++im) {
-            for (unsigned int jm=0; jm<mask2.width; ++jm) {
-                if (mask2.getValue(im, jm) == 1) {
-                    cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(0, 0, 255));
-                }
-            }
-        }
-
+        gui.addMask(marker1.masks[0]);
+        gui.addMask(marker1.masks[1]);
+        gui.addMask(marker1.masks[2]);
         // show detected markers
-        cv::rectangle(frame, cv::Point(pm1.x - pm1.size/2, pm1.minI), cv::Point(pm1.x + pm1.size/2, pm1.maxI), cv::Scalar(0, 0, 0));
-        cv::rectangle(frame, cv::Point(pm1.x - pm1.size/2 + 1, pm1.minI + 1), cv::Point(pm1.x + pm1.size/2 - 1, pm1.maxI - 1), cv::Scalar(0, 0, 0));
-#if 0
-        cv::rectangle(frame, cv::Point(pm2.x - pm2.size/2, pm2.minI), cv::Point(pm2.x + pm2.size/2, pm2.maxI), cv::Scalar(0, 0, 0));
-        cv::rectangle(frame, cv::Point(pm2.x - pm2.size/2 + 1, pm2.minI + 1), cv::Point(pm2.x + pm2.size/2 - 1, pm2.maxI - 1), cv::Scalar(0, 0, 0));
-        cv::rectangle(frame, cv::Point(pm3.x - pm3.size/2, pm3.minI), cv::Point(pm3.x + pm3.size/2, pm3.maxI), cv::Scalar(0, 0, 255));
-        cv::rectangle(frame, cv::Point(pm3.x - pm3.size/2 + 1, pm3.minI + 1), cv::Point(pm3.x + pm3.size/2 - 1, pm3.maxI - 1), cv::Scalar(0, 0, 0));
-        cv::rectangle(frame, cv::Point(pm4.x - pm4.size/2, pm4.minI), cv::Point(pm4.x + pm4.size/2, pm4.maxI), cv::Scalar(0, 0, 255));
-        cv::rectangle(frame, cv::Point(pm4.x - pm4.size/2 + 1, pm4.minI + 1), cv::Point(pm4.x + pm4.size/2 - 1, pm4.maxI - 1), cv::Scalar(0, 0, 0));
-#endif
-        cv::imshow("img", frame);
-        cv::waitKey(100);
+        gui.addRectangle(pm1);
+
+        // show the final image
+        gui.update();
 
         count++;
 
