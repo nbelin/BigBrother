@@ -145,3 +145,30 @@ Finally, when searching unexisting robots in a picture can be very expensive. Bi
      ┌──┴───┐                               ┌──┴───┐                              ┌───┴───┐          ┌───┴───┐     
      │Robots│                               │Server│                              │Camera1│          │Camera2│     
      └──────┘                               └──────┘                              └───────┘          └───────┘     
+
+
+(plantUML code (https://www.planttext.com/):
+participant Robots
+box "BigBrother"
+    participant Server
+    participant Camera1
+    participant Camera2
+== Start up (loop until ok) ==
+Robots -> Server : battle starts (marker list to detect)
+Server -> Camera1 : battle starts (marker list to detect)
+Camera1 --> Server : ok
+Server -> Camera2 : battle starts (marker list to detect)
+Camera2 --> Server : ok
+Server --> Robots : ok
+== Loop ==
+Camera1 -> Server : marker(s) detected (pixel-level)
+Camera2 -> Server : marker(s) detected (pixel-level)
+Server -> Server : triangulation (every x ms)
+Server -> Robots : robot(s) detected (x,y-level)
+== Clean up (loop until ok) ==
+Robots -> Server : battle ends
+Server -> Camera1 : battle ends
+Camera1 --> Server : ok
+Server -> Camera2 : battle ends
+Camera2 --> Server : ok
+Server --> Robots : ok
