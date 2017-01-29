@@ -1,0 +1,13 @@
+# Tmp
+*~
+
+# Binary
+build
+*.pyc
+
+# Qt
+*.user
+*.creator
+*.files
+*.includes
+*.config
