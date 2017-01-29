@@ -7,7 +7,7 @@
 
 class PositionMarker {
 public:
-  PositionMarker(int pmID) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
+  PositionMarker(int pmID = 0) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
   unsigned int pmID;
   unsigned int imageID;
   unsigned int x;
