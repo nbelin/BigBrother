@@ -10,6 +10,7 @@
 #include "../config/def_colors.hpp"
 #include "../config/client.hpp"
 
+#include "data.hpp"
 #include "gui.hpp"
 
 cv::VideoCapture open_cam(int argc, char* argv[]) {
