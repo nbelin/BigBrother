@@ -19,11 +19,20 @@
 //#define VIDEO "../../sample/test.mp4"
 #define VIDEO 0
 
+cv::VideoCapture open_cam(int argc, char* argv[]) {
+    if(argc > 1) {
+        std::cout << "Opening file : " << argv[1] << std::endl;
+        return cv::VideoCapture(argv[1]);
+    }
+    else {
+        std::cout << "Opening default camera" << std::endl;
+        return cv::VideoCapture(0); // open the default camera
+    }
+}
+
 int main(int argc, char* argv[]) {
-    (void) argc;
-    (void) argv;
-    std::cout << "GO" << std::endl;
-    cv::VideoCapture cap(VIDEO); // open the default camera
+    cv::VideoCapture cap = open_cam(argc, argv) ;
+
     if(!cap.isOpened()) {  // check if we succeeded
         std::cout << "Failed to open video" << std::endl;
         return -1;
@@ -41,14 +50,6 @@ int main(int argc, char* argv[]) {
     //Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
     Marker marker1(image, true, darkBlueRect, greenRect, magentaRect);
     PositionMarker pm1(0);
-#if 0
-    Marker marker2(image, false, redRect, yellowRect, dummyRect);
-    PositionMarker pm2(1);
-    Marker marker3(image, true, greenRect, blueRect, dummyRect);
-    PositionMarker pm3(2);
-    Marker marker4(image, true, blueRect, greenRect, dummyRect);
-    PositionMarker pm4(3);
-#endif
 
     Communication comm(CAMERA_ID, SERVER_IP, SERVER_PORT);
     GUI gui;
@@ -72,32 +73,6 @@ int main(int argc, char* argv[]) {
             std::cout << "POS " << count << std::endl;
             std::cout << "NOP (1)" << std::endl;
         }
-
-#if 0 // simple conf: 1 marker to detect
-        result = marker2.getNextPos(image, pm2);
-        if (result) {
-            comm.prepareMessage(&pm2);
-        } else {
-            std::cout << "POS " << count << std::endl;
-            std::cout << "NOP (2)" << std::endl;
-        }
-
-        result = marker3.getNextPos(image, pm3);
-        if (result) {
-            comm.prepareMessage(&pm3);
-        } else {
-            std::cout << "POS " << count << std::endl;
-            std::cout << "NOP (3)" << std::endl;
-        }
-
-        result = marker4.getNextPos(image, pm4);
-        if (result) {
-            comm.prepareMessage(&pm4);
-        } else {
-            std::cout << "POS " << count << std::endl;
-            std::cout << "NOP (4)" << std::endl;
-        }
-#endif
 
         gui.setFrame(frame);
         // debug detected pixels for given marker/color
