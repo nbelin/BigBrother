@@ -18,6 +18,8 @@
 #define VIDEO 0
 
 int main(int argc, char* argv[]) {
+    (void) argc;
+    (void) argv;
     std::cout << "GO" << std::endl;
     cv::VideoCapture cap(VIDEO); // open the default camera
     if(!cap.isOpened()) {  // check if we succeeded
@@ -105,13 +107,14 @@ int main(int argc, char* argv[]) {
         // show detected markers
         cv::rectangle(frame, cv::Point(pm1.x - pm1.size/2, pm1.minI), cv::Point(pm1.x + pm1.size/2, pm1.maxI), cv::Scalar(0, 0, 0));
         cv::rectangle(frame, cv::Point(pm1.x - pm1.size/2 + 1, pm1.minI + 1), cv::Point(pm1.x + pm1.size/2 - 1, pm1.maxI - 1), cv::Scalar(0, 0, 0));
+#if 0
         cv::rectangle(frame, cv::Point(pm2.x - pm2.size/2, pm2.minI), cv::Point(pm2.x + pm2.size/2, pm2.maxI), cv::Scalar(0, 0, 0));
         cv::rectangle(frame, cv::Point(pm2.x - pm2.size/2 + 1, pm2.minI + 1), cv::Point(pm2.x + pm2.size/2 - 1, pm2.maxI - 1), cv::Scalar(0, 0, 0));
         cv::rectangle(frame, cv::Point(pm3.x - pm3.size/2, pm3.minI), cv::Point(pm3.x + pm3.size/2, pm3.maxI), cv::Scalar(0, 0, 255));
         cv::rectangle(frame, cv::Point(pm3.x - pm3.size/2 + 1, pm3.minI + 1), cv::Point(pm3.x + pm3.size/2 - 1, pm3.maxI - 1), cv::Scalar(0, 0, 0));
         cv::rectangle(frame, cv::Point(pm4.x - pm4.size/2, pm4.minI), cv::Point(pm4.x + pm4.size/2, pm4.maxI), cv::Scalar(0, 0, 255));
         cv::rectangle(frame, cv::Point(pm4.x - pm4.size/2 + 1, pm4.minI + 1), cv::Point(pm4.x + pm4.size/2 - 1, pm4.maxI - 1), cv::Scalar(0, 0, 0));
-
+#endif
         cv::imshow("img", frame);
         cv::waitKey(100);
 
