@@ -50,32 +50,40 @@ public:
     }
 };
 
-class DetectorController {
+class LUVController {
 private:
     Data& data;
-    int count = 0;
 public:
-    DetectorController(Data& data)
+    LUVController(Data& data)
         : data(data) {
     }
 
     void update(void) {
         cv::cvtColor(data.frame, data.hsv, CV_BGR2Luv);
         data.image.setData(data.hsv.data);
-        data.image.id = count;
+    }
+};
 
-        if (count % 20 == 0)
-            std::cout << "NEXT POS " << count << std::endl;
-        bool result;
+class DetectorController {
+private:
+    Data& data;
+public:
+    DetectorController(Data& data)
+        : data(data) {
+        data.image.id = 0;
+    }
 
-        result = data.marker[0].getNextPos(data.image, data.pm[0]);
-        if (result) {
+    void update(void) {
+        if (data.image.id % 20 == 0)
+            std::cout << "NEXT POS " << data.image.id << std::endl;
+
+        if (data.marker[0].getNextPos(data.image, data.pm[0])) {
             //comm.prepareMessage(&data.pm[0]);
         } else {
-            std::cout << "POS " << count << std::endl;
+            std::cout << "POS " << data.image.id << std::endl;
             std::cout << "NOP (1)" << std::endl;
         }
-        count++;
+        data.image.id++;
     }
 };
 
@@ -83,6 +91,7 @@ int main(int argc, char* argv[]) {
     Data data;
 
     VideoController video(data, argc, argv);
+    LUVController luv(data);
     DetectorController detector(data);
     GUI gui(data);
     Communication comm(data, CAMERA_ID, SERVER_IP, SERVER_PORT);
@@ -90,6 +99,7 @@ int main(int argc, char* argv[]) {
     std::cout << "start loop" << std::endl;
     while(1) {
         video.update(); // get a new frame from camera
+        luv.update();
         detector.update();
         gui.update();
         comm.update();
