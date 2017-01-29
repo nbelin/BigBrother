@@ -23,7 +23,8 @@ Color green_luv(200, 66, 161);
 Rectangle greenRect(green_luv, 30);
 
 Color dark_blue_luv(47, 95, 85);
-Rectangle darkBlueRect(dark_blue_luv, 40);
+Rectangle darkBlueRect(dark_blue_luv, 30);
 
-Color magenta_luv(70, 139, 139);
-Rectangle magentaRect(magenta_luv, 40);
+//Color magenta_luv(70, 139, 139);
+Color magenta_luv(105, 140, 130);
+Rectangle magentaRect(magenta_luv, 20);

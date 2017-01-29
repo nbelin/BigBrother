@@ -27,7 +27,7 @@ Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, 
 bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
     //std::cout << "getNextPos !" << std::endl;
     nextPos.reset();
-    for (int i=0; i<2; ++i) {
+    for (int i=0; i<3; ++i) {
         masks[i].reset();
     }
 
@@ -35,6 +35,7 @@ bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
         unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2;
         unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2;
         detectFromPoint(image, nextPos, startI, startJ);
+        //detectFromPrevious(image, nextPos);
         if (isMarkerFound(nextPos)) {
             previousPos = nextPos;
             return true;
@@ -80,7 +81,7 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
 
         const unsigned int length = previousAreas[0].maxJ - previousAreas[0].minJ;
         const unsigned int nj = previousAreas[0].minJ + length/2;
-        const unsigned int iMax = std::max(startI + length + 20, image.height);
+        const unsigned int iMax = std::max(previousAreas[0].maxI + 10, image.height);
 
         for (unsigned int ni = startI; ni < iMax; ++ni) {
             if (rects[1].isPixelRightColor(image, ni, nj)) {
@@ -93,13 +94,28 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
                     return false;
                 }
 
-                ratePositionMarker(image, nextPos);
-                if (isMarkerFound(nextPos)) {
-                    previousPos = nextPos;
-                    return true;
+                const unsigned int iMax = std::max(previousAreas[1].maxI + 10, image.height);
+
+                for (unsigned int nni = startI; nni < iMax; ++nni) {
+                    if (rects[2].isPixelRightColor(image, nni, nj)) {
+
+                        rects[2].expandArea(image, masks[2], previousAreas[2], nni, nj);
+
+                        rects[1].rateArea(previousAreas[2]);
+                        //previousAreas[2].display();
+                        if (previousAreas[2].rank < 0.6) {
+                            return false;
+                        }
+
+                        ratePositionMarker(image, nextPos);
+                        if (isMarkerFound(nextPos)) {
+                            previousPos = nextPos;
+                            return true;
+                        }
+                        std::cout << "oh almost :(" << std::endl;
+                        nextPos.display();
+                    }
                 }
-                std::cout << "oh almost :(" << std::endl;
-                nextPos.display();
             }
         }
     }
@@ -118,7 +134,7 @@ bool Marker::detectFromZero(const Image3D& image, PositionMarker& nextPos) {
 }
 
 bool Marker::detectFromPrevious(const Image3D& image, PositionMarker& nextPost) {
-    for (size_t id=0; id<2; ++id) {
+    for (size_t id=0; id<3; ++id) {
         const unsigned int startI = (previousAreas[id].maxI + previousAreas[id].minI)/2;
         const unsigned int startJ = (previousAreas[id].maxJ + previousAreas[id].minJ)/2;
         rects[id].expandArea(image, masks[id], previousAreas[id], startI, startJ);
@@ -139,34 +155,40 @@ bool Marker::detectFromPrevious(const Image3D& image, PositionMarker& nextPost) 
 void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
     // compute mean J interval for global marker
     unsigned int meanMinJ = 0;
-    for (size_t id=0; id<2; ++id) {
+    for (size_t id=0; id<3; ++id) {
         meanMinJ += previousAreas[id].minJ;
     }
-    meanMinJ /= 2;
+    meanMinJ /= 3;
     unsigned int meanMaxJ = 0;
-    for (size_t id=0; id<2; ++id) {
+    for (size_t id=0; id<3; ++id) {
         meanMaxJ += previousAreas[id].maxJ;
     }
-    meanMaxJ /= 2;
+    meanMaxJ /= 3;
 
     // feed most properties for PositionMarker (except confidence)
     pm.imageID = image.id;
     pm.x = ( meanMinJ + meanMaxJ ) / 2;
     pm.size = meanMaxJ - meanMinJ;
     pm.minI = previousAreas[0].minI;
-    pm.maxI = previousAreas[1].maxI;
+    pm.maxI = previousAreas[2].maxI;
     if (isMarkerFound(previousPos)) {
         pm.dx = (int)previousPos.x - (int)pm.x;
         pm.dsize = (int)previousPos.size - (int)pm.size;
     }
 
+    // make sure each detected area is close from each other
+    unsigned int distBetweenAreas = 0;
+    for (size_t id=1; id<3; ++id) {
+        distBetweenAreas += absdiff(previousAreas[id-1].maxI, previousAreas[id].minI);
+    }
+
     // compute difference with the mean
     unsigned int distMinJ = 0;
-    for (size_t id=0; id<2; ++id) {
+    for (size_t id=0; id<3; ++id) {
         distMinJ += absdiff(meanMinJ, previousAreas[id].minJ);
     }
     unsigned int distMaxJ = 0;
-    for (size_t id=0; id<2; ++id) {
+    for (size_t id=0; id<3; ++id) {
         distMaxJ += absdiff(meanMaxJ, previousAreas[id].maxJ);
     }
 

@@ -36,7 +36,8 @@ int main(int argc, char* argv[]) {
 
     Rectangle dummyRect;
     //Marker marker1(image, false, yellowRect, redRect, dummyRect);
-    Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
+    //Marker marker1(image, true, darkBlueRect, magentaRect, dummyRect);
+    Marker marker1(image, true, darkBlueRect, greenRect, magentaRect);
     PositionMarker pm1(0);
 #if 0
     Marker marker2(image, false, redRect, yellowRect, dummyRect);
@@ -100,6 +101,22 @@ int main(int argc, char* argv[]) {
             for (unsigned int jm=0; jm<mask.width; ++jm) {
                 if (mask.getValue(im, jm) == 1) {
                     cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(255, 0, 0));
+                }
+            }
+        }
+        Image &mask1 = marker1.masks[1];
+        for (unsigned int im=0; im<mask1.height; ++im) {
+            for (unsigned int jm=0; jm<mask1.width; ++jm) {
+                if (mask1.getValue(im, jm) == 1) {
+                    cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(0, 255, 0));
+                }
+            }
+        }
+        Image &mask2 = marker1.masks[2];
+        for (unsigned int im=0; im<mask2.height; ++im) {
+            for (unsigned int jm=0; jm<mask2.width; ++jm) {
+                if (mask2.getValue(im, jm) == 1) {
+                    cv::line(frame, cv::Point(jm, im), cv::Point(jm, im), cv::Scalar(0, 0, 255));
                 }
             }
         }
