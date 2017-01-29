@@ -1,25 +1,33 @@
 CC=g++
-CFLAGS=-Wall -Wextra -O3 -std=c++11 -ltfo
+CFLAGS=-Wall -Wextra -O3 -std=c++11
 LFLAGS=`pkg-config opencv --libs`
-TARGET=exec
-SOURCE_REP=source/
-BUILD_REP=build/
-OBJ=main rectangle marker communication
 
-all: $(addsuffix .o, $(addprefix $(BUILD_REP), $(OBJ)))
-	$(CC) $^ -o $(BUILD_REP)$(TARGET) $(LFLAGS)
+BUILD_DIR ?= build
+EXE_NAME = detector
+EXE_PATH = $(BUILD_DIR)/$(EXE_NAME)
 
-$(BUILD_REP)%.o: $(SOURCE_REP)%.cpp
+SOURCE_DIR = source
+OBJS=main rectangle marker communication
+
+all: $(BUILD_DIR) compile
+
+compile: $(addsuffix .o, $(addprefix $(BUILD_DIR)/, $(OBJS)))
+	$(CC) $^ -o $(EXE_PATH) $(LFLAGS)
+
+$(BUILD_DIR):
+	mkdir $(BUILD_DIR)
+
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(BUILD_REP)*.o $(BUILD_REP)$(TARGET)
+	rm -rf $(BUILD_DIR)/*
 
 run:
-	$(BUILD_REP)$(TARGET)
+	./$(EXE_PATH)
 
 stop:
-	killall -9 $(TARGET)
+	killall -9 $(EXE_NAME)
 
 check:
 	valgrind --leak-check=full $(BUILD_REP)$(TARGET)
