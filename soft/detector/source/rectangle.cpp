@@ -4,14 +4,12 @@
 #include <iostream>
 #include <stack>
 
-Rectangle::Rectangle(const Color& average, unsigned int radius) : average(average), radius(radius) {}
-
-inline bool Rectangle::isRightColor(const Color& val) const {
-    return val.v1 > 10 && average.luv_square_dist(val) < radius * radius;
-}
+Rectangle::Rectangle(void) : color_set(Color(0,0,0), 0) {}
+Rectangle::Rectangle(const Color& average, unsigned int radius) : color_set(average, radius) {}
+Rectangle::Rectangle(const ColorSet& color_set) : color_set(color_set) {}
 
 bool Rectangle::isPixelRightColor(const Image3D& image, unsigned int i, unsigned int j) const {
-    return isRightColor(image.getValue(i, j));
+    return color_set.contains(image.getValue(i, j));
 }
 
 void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsigned int i, unsigned int j) {
