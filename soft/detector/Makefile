@@ -7,7 +7,7 @@ EXE_NAME = detector
 EXE_PATH = $(BUILD_DIR)/$(EXE_NAME)
 
 SOURCE_DIR = source
-OBJS=main rectangle marker communication gui
+OBJS=main rectangle marker communication gui video_controller detector_controller
 
 all: $(BUILD_DIR) compile
 
