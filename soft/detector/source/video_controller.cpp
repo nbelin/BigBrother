@@ -25,7 +25,7 @@ VideoController::VideoController(Data& data, int argc, char* argv[])
 
     // This first (dummy) image is used to initialize buffers in Classes
     data.image = Image3D(data.frame.cols, data.frame.rows, NULL);
-    data.marker.push_back(Marker(data.image, true, darkBlueRect, greenRect, magentaRect));
+    data.marker.push_back(Marker(data.image, true, darkBlueSet, greenSet, magentaSet));
     data.pm.push_back(PositionMarker(0));
 }
 

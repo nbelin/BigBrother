@@ -8,6 +8,7 @@
 
 class Marker {
 public:
+  Marker(const Image3D& firstImage, bool isEnemy, const ColorSet& rect1, const ColorSet& rect2, const ColorSet& rect3);
   Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3);
   bool getNextPos(const Image3D& image, PositionMarker &nextPos);
   bool isMarkerFound(const PositionMarker& pm);

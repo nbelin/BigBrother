@@ -24,6 +24,10 @@ Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, 
     }
 }
 
+Marker::Marker(const Image3D& firstImage, bool isEnemy, const ColorSet& rect1, const ColorSet& rect2, const ColorSet& rect3)
+    : Marker(firstImage, isEnemy, Rectangle(rect1), Rectangle(rect2), Rectangle(rect3)) {
+}
+
 bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
     //std::cout << "getNextPos !" << std::endl;
     nextPos.reset();
