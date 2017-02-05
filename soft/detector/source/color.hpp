@@ -1,6 +1,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
+#include "util.hpp"
 #include <cereal/cereal.hpp>
 
 class Color {
@@ -16,9 +17,9 @@ public:
     return v1 <= other.v1 && v2 <= other.v2 && v3 <= other.v3;
   }
   unsigned int luv_square_dist(const Color& other) const {
-      int diff_u = (int)v2 - (int)other.v2;
+      unsigned int diff_u = absdiff(v2, other.v2);
       unsigned int square_diff_u = diff_u * diff_u;
-      int diff_v = (int)v3 - (int)other.v3;
+      unsigned int diff_v = absdiff(v3, other.v3);
       unsigned int square_diff_v = diff_v * diff_v;
       return square_diff_u + square_diff_v;
   }

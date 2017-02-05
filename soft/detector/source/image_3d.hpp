@@ -1,6 +1,8 @@
 #ifndef IMAGE_3D_HPP
 #define IMAGE_3D_HPP
 
+#include "color.hpp"
+
 class Image3D {
 public:
   Image3D(unsigned int width, unsigned int height, unsigned char* data) : width(width), height(height), data(data) {}

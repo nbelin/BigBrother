@@ -41,15 +41,15 @@ void CallBackFunc_diag(int event, int x, int y, int, void* userdata) {
 
 
 int color_square_diff(cv::Vec3b color1, cv::Vec3b color2) {
-    //const char l1 = color1.val[0];
-    const char u1 = color1.val[1];
-    const char v1 = color1.val[2];
-    //const char l2 = color2.val[0];
-    const char u2 = color2.val[1];
-    const char v2 = color2.val[2];
-    //const int diff_l = l1 - l2;
-    const int diff_u = u1 - u2;
-    const int diff_v = v1 - v2;
+    //const unsigned char l1 = color1.val[0];
+    const unsigned char u1 = color1.val[1];
+    const unsigned char v1 = color1.val[2];
+    //const unsigned char l2 = color2.val[0];
+    const unsigned char u2 = color2.val[1];
+    const unsigned char v2 = color2.val[2];
+    //const unsigned int diff_l = l1 - l2;
+    const unsigned int diff_u = absdiff(u1, u2);
+    const unsigned int diff_v = absdiff(v1, v2);
     return diff_u * diff_u + diff_v * diff_v;// + diff_l * diff_l;
 }
 
@@ -57,14 +57,14 @@ int color_square_diff(cv::Vec3b color1, cv::Vec3b color2) {
 cv::Mat show_color(cv::Mat image, cv::Mat image_LUV, int id, int r, int l) {
     cv::Mat masque = cv::Mat::zeros(image.size().height, image.size().width, CV_8U);
 
-    cv::Vec3b c2(tab_couleur[id][0], tab_couleur[id][1], tab_couleur[id][2]);
+    cv::Vec3b cref(tab_couleur[id][0], tab_couleur[id][1], tab_couleur[id][2]);
 
     for(int j = 0; j < image_LUV.size().width; j++) {
         for(int i = 0; i < image_LUV.size().height; i++) {
             masque.at<uchar>(i, j) = image_LUV.at<cv::Vec3b>(i, j).val[0] / 2;
 
             cv::Vec3b c1 = image_LUV.at<cv::Vec3b>(i, j);
-            int diff = color_square_diff(c1, c2);
+            int diff = color_square_diff(c1, cref);
             if(diff <= r*r && c1.val[0] >= l) {
                 masque.at<uchar>(i,j) = 255;
             }
@@ -78,21 +78,21 @@ cv::Mat show_color(cv::Mat image, cv::Mat image_LUV, int id, int r, int l) {
 cv::Mat show_diagram_LUV(int id, int r, int l) {
     cv::Mat masque = cv::Mat::zeros(255, 255, CV_8UC3);
 
-    int iref = tab_couleur[id][1];
-    int jref = tab_couleur[id][2];
+    cv::Vec3b cref(tab_couleur[id][0], tab_couleur[id][1], tab_couleur[id][2]);
 
     for(int j = 0; j < masque.size().width; j++) {
         for(int i = 0; i < masque.size().height; i++) {
-            masque.at<cv::Vec3b>(i, j) = cv::Vec3b(l, j, i);
+            masque.at<cv::Vec3b>(i, j) = cv::Vec3b(l, i, j);
 
-            int idiff = iref - i;
-            int jdiff = jref - j;
-            int sqdiff = idiff * idiff + jdiff * jdiff;
-            if (sqdiff - (r * r) <= 15 && sqdiff - (r * r) >= -15) {
+            cv::Vec3b c1 = cv::Vec3b(l, i, j);
+            int diff = color_square_diff(cref, c1);
+            if ((diff - (r * r)) <= 20 && (diff - (r * r)) >= -20) {
                 masque.at<cv::Vec3b>(i, j) = cv::Vec3b(0, 0, 0);
             }
         }
     }
+
+    cvtColor(masque, masque, CV_Luv2BGR);
 
     return masque;
 }
@@ -107,9 +107,9 @@ ColorChooserGUI::ColorChooserGUI(Data& data)
     cv::namedWindow("diag_1");
     cv::namedWindow("diag_2");
     cv::namedWindow("diag_3");
-    cv::createTrackbar("square radius color acceptance", "frame_1", &radius_1, 100);
-    cv::createTrackbar("square radius color acceptance", "frame_2", &radius_2, 100);
-    cv::createTrackbar("square radius color acceptance", "frame_3", &radius_3, 100);
+    cv::createTrackbar("square radius color acceptance", "frame_1", &radius_1, 150);
+    cv::createTrackbar("square radius color acceptance", "frame_2", &radius_2, 150);
+    cv::createTrackbar("square radius color acceptance", "frame_3", &radius_3, 150);
     cv::createTrackbar("luminance threshold", "frame_1", &lthreshold_1, 200);
     cv::createTrackbar("luminance threshold", "frame_2", &lthreshold_2, 200);
     cv::createTrackbar("luminance threshold", "frame_3", &lthreshold_3, 200);
