@@ -8,9 +8,16 @@
 #include "luv_controller.hpp"
 #include "detector_controller.hpp"
 
+#include <cereal/archives/json.hpp>
+
 int main(int argc, char* argv[]) {
     Data data;
     Config config;
+
+    std::cout << "CONFIG" << std::endl;
+    cereal::JSONOutputArchive ar(std::cout);
+    ar(CEREAL_NVP(config));
+    std::cout << std::endl;
 
     VideoController video(data, argc, argv);
     LUVController luv(data);
