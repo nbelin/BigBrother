@@ -83,7 +83,7 @@ cv::Mat show_diagram_LUV(int id, int r, int l) {
 
     for(int j = 0; j < masque.size().width; j++) {
         for(int i = 0; i < masque.size().height; i++) {
-            masque.at<cv::Vec3b>(i, j) = cv::Vec3b(l, i, j);
+            masque.at<cv::Vec3b>(i, j) = cv::Vec3b(l, j, i);
 
             int idiff = iref - i;
             int jdiff = jref - j;
