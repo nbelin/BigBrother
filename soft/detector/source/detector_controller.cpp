@@ -12,8 +12,8 @@ void DetectorController::update(void) {
     if (data.marker[0].getNextPos(data.image, data.pm[0])) {
         //comm.prepareMessage(&data.pm[0]);
     } else {
-        std::cout << "POS " << data.image.id << std::endl;
-        std::cout << "NOP (1)" << std::endl;
+        //std::cout << "POS " << data.image.id << std::endl;
+        //std::cout << "NOP (1)" << std::endl;
     }
     data.image.id++;
 }

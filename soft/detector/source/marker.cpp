@@ -57,7 +57,7 @@ bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
         std::cout << "not found even after square" << std::endl;
     }
 
-    std::cout << "previous marker not found ?" << std::endl;
+    //std::cout << "previous marker not found ?" << std::endl;
     previousPos.reset();
 
     return detectFromZero(image, nextPos);
