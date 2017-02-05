@@ -1,5 +1,7 @@
+CEREAL_ROOT ?= $(PWD)/../../../cereal
+
 CC=g++
-CFLAGS=-Wall -Wextra -O3 -std=c++11
+CFLAGS=-Wall -Wextra -O3 -std=c++11 -I$(CEREAL_ROOT)/include
 LFLAGS=`pkg-config opencv --libs`
 
 BUILD_DIR ?= build

@@ -14,7 +14,7 @@ Communication::Communication(Data& data, Config& config) : cameraId(config.detec
     socketAddr.sin_family = AF_INET;
     socketAddr.sin_port = htons(config.rdv_port);
 
-    if (inet_aton(config.rdv_ip , &socketAddr.sin_addr) == 0) {
+    if (inet_aton(config.rdv_ip.c_str(), &socketAddr.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         assert(false);
     }

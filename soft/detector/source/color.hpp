@@ -1,7 +1,14 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
+#include <cereal/cereal.hpp>
+
 class Color {
+public:
+    unsigned char v1;
+    unsigned char v2;
+    unsigned char v3;
+
 public:
   Color(void) {}
   Color(unsigned char v1, unsigned char v2, unsigned char v3) : v1(v1), v2(v2), v3(v3) {}
@@ -16,9 +23,13 @@ public:
       return square_diff_u + square_diff_v;
   }
 
-  unsigned char v1;
-  unsigned char v2;
-  unsigned char v3;
+public:
+    template<class Archive>
+    void serialize(Archive& ar) {
+        ar(CEREAL_NVP(v1));
+        ar(CEREAL_NVP(v2));
+        ar(CEREAL_NVP(v3));
+    }
 };
 
 #endif//COLOR_HPP
