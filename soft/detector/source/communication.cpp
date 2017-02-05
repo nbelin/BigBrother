@@ -5,16 +5,16 @@
 #include <cassert>
 #include <unistd.h>
 
-Communication::Communication(Data& data, const int cameraId, const char * const serverIp, const short serverPort) : cameraId(cameraId), nbMarkers(0), data(data)
+Communication::Communication(Data& data, Config& config) : cameraId(config.camera_id), nbMarkers(0), data(data)
 {
     socketId = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     assert (socketId >= 0);
 
     memset((char *) &socketAddr, 0, sizeof(socketAddr));
     socketAddr.sin_family = AF_INET;
-    socketAddr.sin_port = htons(serverPort);
+    socketAddr.sin_port = htons(config.rdv_port);
 
-    if (inet_aton(serverIp , &socketAddr.sin_addr) == 0) {
+    if (inet_aton(config.rdv_ip , &socketAddr.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         assert(false);
     }

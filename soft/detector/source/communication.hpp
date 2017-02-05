@@ -7,10 +7,11 @@
 #include "marker.hpp"
 
 #include "data.hpp"
+#include "config.hpp"
 
 class Communication {
 public:
-    Communication(Data& data, const int cameraId, const char * const serverIp, const short serverPort);
+    Communication(Data& data, Config& config);
     virtual ~Communication();
     void prepareMessage(const PositionMarker * pm);
     void sendMessage();
