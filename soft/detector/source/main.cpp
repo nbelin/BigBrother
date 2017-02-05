@@ -2,6 +2,7 @@
 #include "config.hpp"
 
 #include "gui.hpp"
+#include "color_chooser_gui.hpp"
 #include "communication.hpp"
 #include "video_controller.hpp"
 #include "luv_controller.hpp"
@@ -16,6 +17,7 @@ int main(int argc, char* argv[]) {
     DetectorController detector(data);
     GUI gui(data);
     Communication comm(data, config);
+    ColorChooserGUI ccgui(data);
 
     std::cout << "start loop" << std::endl;
     while(1) {
@@ -24,5 +26,6 @@ int main(int argc, char* argv[]) {
         detector.update();
         gui.update();
         comm.update();
+        ccgui.update();
     }
 }
