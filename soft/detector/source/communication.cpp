@@ -5,7 +5,7 @@
 #include <cassert>
 #include <unistd.h>
 
-Communication::Communication(Data& data, Config& config) : cameraId(config.camera_id), nbMarkers(0), data(data)
+Communication::Communication(Data& data, Config& config) : cameraId(config.detector_id), nbMarkers(0), data(data)
 {
     socketId = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     assert (socketId >= 0);
