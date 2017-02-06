@@ -12,8 +12,8 @@ public:
     }
 
     void update(void) {
-        cv::cvtColor(data.frame, data.hsv, CV_BGR2Luv);
-        data.image.setData(data.hsv.data);
+        cv::cvtColor(data.frame, data.luv, CV_BGR2Luv);
+        data.image.setData(data.luv.data);
     }
 };
 
