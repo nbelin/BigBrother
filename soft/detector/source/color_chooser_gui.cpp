@@ -13,9 +13,9 @@ int lthreshold_3 = 50;
 int h_accept_1 = 10;
 int h_accept_2 = 10;
 int h_accept_3 = 10;
-int s_accept_1 = 10;
-int s_accept_2 = 10;
-int s_accept_3 = 10;
+int s_min_1 = 50;
+int s_min_2 = 50;
+int s_min_3 = 50;
 int v_min_1 = 100;
 int v_min_2 = 100;
 int v_min_3 = 100;
@@ -126,15 +126,12 @@ cv::Mat show_diagram_LUV(int id, int r, int l) {
 }
 
 
-cv::Mat show_color_HSV(cv::Mat image, cv::Mat image_HSV, int id, int h_acc, int s_acc, int v_min) {
+cv::Mat show_color_HSV(cv::Mat image, cv::Mat image_HSV, int id, int h_acc, int s_min, int v_min) {
     cv::Mat masque = cv::Mat::zeros(image.size().height, image.size().width, CV_8U);
 
     int href = tab_couleur_hsv[id][0];
-    int sref = tab_couleur_hsv[id][1];
     int hmin = href - h_acc;
     int hmax = href + h_acc;
-    int smin = sref - s_acc;
-    int smax = sref + s_acc;
 
     for(int j = 0; j < image_HSV.size().width; j++) {
         for(int i = 0; i < image_HSV.size().height; i++) {
@@ -143,8 +140,8 @@ cv::Mat show_color_HSV(cv::Mat image, cv::Mat image_HSV, int id, int h_acc, int 
             int h = image_HSV.at<cv::Vec3b>(i, j).val[0];
             int s = image_HSV.at<cv::Vec3b>(i, j).val[1];
             int v = image_HSV.at<cv::Vec3b>(i, j).val[2];
-            if (h >= hmin && h <= hmax && s >= smin && s <= smax && v >= v_min) {
-                masque.at<cv::Vec3b>(i, j) = cv::Vec3b(i, j, 255);
+            if (h >= hmin && h <= hmax && s >= s_min && v >= v_min) {
+                masque.at<uchar>(i, j) = 255;
             }
         }
     }
@@ -153,19 +150,16 @@ cv::Mat show_color_HSV(cv::Mat image, cv::Mat image_HSV, int id, int h_acc, int 
 }
 
 
-cv::Mat show_diagram_HSV(int id, int h_acc, int s_acc) {
-    cv::Mat masque = cv::Mat::zeros(255, 255, CV_8UC3);
+cv::Mat show_diagram_HSV(int id, int h_acc, int s_min) {
+    cv::Mat masque = cv::Mat::zeros(180, 255, CV_8UC3);
 
     int href = tab_couleur_hsv[id][0];
-    int sref = tab_couleur_hsv[id][1];
     int hmin = href - h_acc;
     int hmax = href + h_acc;
-    int smin = sref - s_acc;
-    int smax = sref + s_acc;
 
     for(int j = 0; j < masque.size().width; j++) {
         for(int i = 0; i < masque.size().height; i++) {
-            if (i != hmin && i != hmax && j != smin && j != smax) {
+            if (i != hmin && i != hmax && j != s_min) {
                 masque.at<cv::Vec3b>(i, j) = cv::Vec3b(i, j, 255);
             }
         }
@@ -192,21 +186,21 @@ ColorChooserGUI::ColorChooserGUI(Data& data)
     cv::namedWindow("diagHSV_1");
     cv::namedWindow("diagHSV_2");
     cv::namedWindow("diagHSV_3");
-    cv::createTrackbar("square radius color acceptance", "diagLUV_1", &radius_1, 150);
-    cv::createTrackbar("square radius color acceptance", "diagLUV_2", &radius_2, 150);
-    cv::createTrackbar("square radius color acceptance", "diagLUV_3", &radius_3, 150);
+    cv::createTrackbar("color acceptance", "diagLUV_1", &radius_1, 150);
+    cv::createTrackbar("color acceptance", "diagLUV_2", &radius_2, 150);
+    cv::createTrackbar("color acceptance", "diagLUV_3", &radius_3, 150);
     cv::createTrackbar("luminance threshold", "diagLUV_1", &lthreshold_1, 200);
     cv::createTrackbar("luminance threshold", "diagLUV_2", &lthreshold_2, 200);
     cv::createTrackbar("luminance threshold", "diagLUV_3", &lthreshold_3, 200);
-    cv::createTrackbar("hue acceptance", "diagHSV_1", &h_accept_1, 50);
-    cv::createTrackbar("hue acceptance", "diagHSV_2", &h_accept_2, 50);
-    cv::createTrackbar("hue acceptance", "diagHSV_3", &h_accept_3, 50);
-    cv::createTrackbar("saturation acceptance", "diagHSV_1", &s_accept_1, 50);
-    cv::createTrackbar("saturation acceptance", "diagHSV_2", &s_accept_2, 50);
-    cv::createTrackbar("saturation acceptance", "diagHSV_3", &s_accept_3, 50);
-    cv::createTrackbar("minimum value", "diagHSV_1", &v_min_1, 200);
-    cv::createTrackbar("minimum value", "diagHSV_2", &v_min_2, 200);
-    cv::createTrackbar("minimum value", "diagHSV_3", &v_min_3, 200);
+    cv::createTrackbar("hue acceptance", "diagHSV_1", &h_accept_1, 30);
+    cv::createTrackbar("hue acceptance", "diagHSV_2", &h_accept_2, 30);
+    cv::createTrackbar("hue acceptance", "diagHSV_3", &h_accept_3, 30);
+    cv::createTrackbar("min saturation", "diagHSV_1", &s_min_1, 200);
+    cv::createTrackbar("min saturation", "diagHSV_2", &s_min_2, 200);
+    cv::createTrackbar("min saturation", "diagHSV_3", &s_min_3, 200);
+    cv::createTrackbar("min value", "diagHSV_1", &v_min_1, 200);
+    cv::createTrackbar("min value", "diagHSV_2", &v_min_2, 200);
+    cv::createTrackbar("min value", "diagHSV_3", &v_min_3, 200);
 
     cv::setMouseCallback("frameToClick", CallBackFunc, &data);
     cv::setMouseCallback("diagLUV_1", CallBackFunc_diagLUV, &id_1);
@@ -228,9 +222,9 @@ void ColorChooserGUI::update(void) {
         frame = show_diagram_LUV(0, radius_1, lthreshold_1);
         cv::imshow("diagLUV_1", frame);
         // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 0, h_accept_1, s_accept_1, v_min_1);
+        frame = show_color_HSV(data.frame, data.hsv, 0, h_accept_1, s_min_1, v_min_1);
         cv::imshow("frameHSV_1", frame);
-        frame = show_diagram_LUV(0, h_accept_1, s_accept_1);
+        frame = show_diagram_HSV(0, h_accept_1, s_min_1);
         cv::imshow("diagHSV_1", frame);
     }
     if ( couleur >= 2 ) {
@@ -240,9 +234,9 @@ void ColorChooserGUI::update(void) {
         frame = show_diagram_LUV(1, radius_2, lthreshold_2);
         cv::imshow("diagLUV_2", frame);
         // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 1, h_accept_2, s_accept_2, v_min_2);
+        frame = show_color_HSV(data.frame, data.hsv, 1, h_accept_2, s_min_2, v_min_2);
         cv::imshow("frameHSV_2", frame);
-        frame = show_diagram_LUV(1, h_accept_2, s_accept_2);
+        frame = show_diagram_HSV(1, h_accept_2, s_min_2);
         cv::imshow("diagHSV_2", frame);
     }
     if ( couleur >= 3 ) {
@@ -252,9 +246,9 @@ void ColorChooserGUI::update(void) {
         frame = show_diagram_LUV(2, radius_3, lthreshold_3);
         cv::imshow("diagLUV_3", frame);
         // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 2, h_accept_3, s_accept_3, v_min_3);
+        frame = show_color_HSV(data.frame, data.hsv, 2, h_accept_3, s_min_3, v_min_3);
         cv::imshow("frameHSV_3", frame);
-        frame = show_diagram_LUV(2, h_accept_3, s_accept_3);
+        frame = show_diagram_HSV(2, h_accept_3, s_min_3);
         cv::imshow("diagHSV_3", frame);
     }
 }

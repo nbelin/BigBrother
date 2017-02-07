@@ -13,6 +13,7 @@ public:
 
     void update(void) {
         cv::cvtColor(data.frame, data.hsv, CV_BGR2HSV);
+        assert(data.hsv.data != nullptr);
         data.image.setData(data.hsv.data);
     }
 };
