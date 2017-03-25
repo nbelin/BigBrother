@@ -5,6 +5,7 @@
 #include "marker.hpp"
 
 #include <vector>
+#include <string>
 
 #include <opencv2/opencv.hpp>
 
@@ -15,6 +16,9 @@ struct Data {
     Image3D image = {0,0,NULL};
     std::vector<PositionMarker> pm;
     std::vector<Marker> marker;
+    std::string input_video_filename;
+    std::string output_video_filename;
+    std::string result_filename;
 };
 
 #endif//DATA_HPP

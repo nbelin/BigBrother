@@ -3,12 +3,16 @@
 
 #include "data.hpp"
 
+#include <string>
+
 class VideoController {
 private:
     Data& data;
     cv::VideoCapture cap;
+    cv::VideoWriter writer;
+    cv::VideoCapture open_cam(std::string filename);
 public:
-    VideoController(Data& data, int argc, char* argv[]);
+    VideoController(Data& data);
 
     void update(void);
 };
