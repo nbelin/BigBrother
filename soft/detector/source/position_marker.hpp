@@ -28,6 +28,9 @@ public:
       dx = 0;
       dsize = 0;
   }
+  bool hasBeenFound() {
+      return confidence > 0;
+  }
 };
 
 

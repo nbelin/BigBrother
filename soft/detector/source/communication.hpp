@@ -13,9 +13,7 @@ class Communication {
 public:
     Communication(Data& data, Config& config);
     virtual ~Communication();
-    void prepareMessage(const PositionMarker * pm);
     void sendMessage();
-    void resetMessage();
 public:
     void update(void);
 private:
@@ -24,8 +22,6 @@ private:
     struct sockaddr_in socketAddr;
     static const int BUFFLEN = 1024;
     char buffer [BUFFLEN];
-    int nbMarkers;
-    const PositionMarker* posMarkers[4];
     Data& data;
 };
 
