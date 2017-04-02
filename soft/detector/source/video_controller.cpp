@@ -29,6 +29,9 @@ VideoController::VideoController(Data& data)
     data.image = Image3D(data.frame.cols, data.frame.rows, NULL);
     data.marker.push_back(Marker(data.image, true, darkBlueSet, greenSet, magentaSet));
     data.pm.push_back(PositionMarker(0));
+    data.pm.push_back(PositionMarker(1));
+    data.pm.push_back(PositionMarker(2));
+    data.pm.push_back(PositionMarker(3));
 
 
     // Init VideoWriter to save the camera video to allow playback

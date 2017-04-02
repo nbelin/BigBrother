@@ -9,14 +9,7 @@ Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, 
     rects[0] = rect1;
     rects[1] = rect2;
     rects[2] = rect3;
-    previousPos.imageID = 0;
-    previousPos.x = 0;
-    previousPos.size = 0;
-    previousPos.minI = 0;
-    previousPos.maxI = 0;
-    previousPos.confidence = 0.f;
-    previousPos.dx = 0;
-    previousPos.dsize = 0;
+    previousPos.reset();
 
     for (int i=0; i<3; ++i) {
         masks_vec[i].resize(firstImage.width * firstImage.height);
