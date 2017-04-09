@@ -56,6 +56,7 @@ def isInTable(point, radius):
 	return point[0] > -minMaxX and point[0] < minMaxX and point[1] > minY and point[1] < maxY
 
 def posFrom3Cameras(cams, markers, curTime):
+	# today, if one posFrom2Cameras fails, consider we also fail. Could be improved!
 	pos12, rad12 = posFrom2Cameras(cams[0:2], markers[0:2], curTime)
 	if rad12 < 0:
 		return [], -1
@@ -96,11 +97,9 @@ def posFrom2Cameras(cams, markers, curTime):
 	# first, check if vectors are (slightly) collinear because line intersection does not work in this case
 	if areVectorsCollinear(vec1, vec2):
 		# let's get the centroid of the 2 approx positions, and make sure this is not absurd
-		#print "collinear!"
 		dist12 = distPos(pos1, pos2)
 		if dist12 > 800:
 			# information not good enough
-			#print "collinear but too far ", res, pos1, pos2
 			return [], -1
 		res = numpy.array(centroid([pos1, pos2], [rad1, rad2]))
 		# rad1 and rad2 are at best ~100, and at worst ~900
@@ -116,15 +115,12 @@ def posFrom2Cameras(cams, markers, curTime):
 	Dx = C1*B2 - B1*C2
 	Dy = A1*C2 - C1*A2
 	if D == 0:
-		# lines do not intersect
-		#print "det is 0"
+		# lines do not intersect, should not happen because collinearity already tested
 		return [], -1
 	res = numpy.array([ Dx/float(D), Dy/float(D) ])
 	dist1 = distPos(pos1, res)
 	dist2 = distPos(pos2, res)
 	if dist1 > rad1 + 300 or dist2 > rad2 + 300:
-		#print res, pos1, pos2
-		#print "pos1 res pos2 too far " + str(distPos(pos1, res)) + " " + str(distPos(pos2, res))
 		return [], -1
 
 	# rad1 and rad2 are at best ~100, and at worst ~900
@@ -170,8 +166,6 @@ class Robot:
 				# if diffTime is > 1 second, consider information is out of date
 				detectedCameras.append(cam)
 				detectedMarkers.append(cam.markers[self.id])
-				#print cam.pos, cam.angle
-				#cam.markers[self.id].debug()
 		if len(detectedCameras) == 0:
 			# robot has not been detected by any camera
 			return False
@@ -295,47 +289,6 @@ for i in range(4):
 	for cam in range(3):
 		robots[i].addCamera(cameras[cam])
 
-#### data to test perf and corner cases
-cameras[0].markers[0].last_update = 10
-cameras[1].markers[0].last_update = 10
-cameras[2].markers[0].last_update = 10
-cameras[0].markers[0].angle = 0.49
-cameras[1].markers[0].angle = -0.49
-cameras[2].markers[0].angle = 0.01
-cameras[0].markers[0].distance = 800
-cameras[1].markers[0].distance = 1000
-cameras[2].markers[0].distance = 2582
-cameras[0].markers[1].last_update = 10
-cameras[1].markers[1].last_update = 10
-cameras[2].markers[1].last_update = 10
-cameras[0].markers[1].angle = 0.49
-cameras[1].markers[1].angle = -0.49
-cameras[2].markers[1].angle = 0.01
-cameras[0].markers[1].distance = 800
-cameras[1].markers[1].distance = 1000
-cameras[2].markers[1].distance = 2582
-cameras[0].markers[2].last_update = 10
-cameras[1].markers[2].last_update = 10
-cameras[2].markers[2].last_update = 10
-cameras[0].markers[2].angle = 0.49
-cameras[1].markers[2].angle = -0.49
-cameras[2].markers[2].angle = 0.01
-cameras[0].markers[2].distance = 800
-cameras[1].markers[2].distance = 1000
-cameras[2].markers[2].distance = 2582
-cameras[0].markers[3].last_update = 10
-cameras[1].markers[3].last_update = 10
-cameras[2].markers[3].last_update = 10
-cameras[0].markers[3].angle = 0.49
-cameras[1].markers[3].angle = -0.49
-cameras[2].markers[3].angle = 0.01
-cameras[0].markers[3].distance = 800
-cameras[1].markers[3].distance = 1000
-cameras[2].markers[3].distance = 2582
-#print robots[0].updatePos(10.1)
-#print robots[0].getMessage()
-#sys.exit()
-
 # print configuration
 for rob in robots:
 	rob.debug()
@@ -364,7 +317,7 @@ while True:
 			print str(now)
 			msg = ""
 			for rob in robots:
-				if rob.updatePos(10.3):
+				if rob.updatePos(now):
 					msg += rob.getMessage()
 			if len(msg) > 0:
 				# send message to robots
