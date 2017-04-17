@@ -33,8 +33,12 @@ void Communication::sendMessage()
     for (size_t i=0; i<data.pm.size(); ++i) {
         PositionMarker &pm = data.pm[i];
         if (pm.hasBeenFound()) {
-            int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, " %d %f %f %f",
-                                  pm.pmID, (float)pm.x, (float)pm.size, pm.confidence);
+            float angle;
+            int distance;
+            pm.toWorld(&angle, &distance);
+
+            int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, " %d %f %d %f",
+                                  pm.pmID, angle, distance, pm.confidence);
             if (result < 0) {
                 fprintf(stderr, "Communication::sendMessage snprintf() failed\n");
             }
@@ -46,6 +50,7 @@ void Communication::sendMessage()
     if (sendMessage) {
         buffer[BUFFLEN-1] = '\0';
         //send the message
+        std::cout << "SEND: " << buffer << std::endl;
         if (sendto(socketId, buffer, strlen(buffer) , 0 , (struct sockaddr *) &socketAddr, sizeof(socketAddr)) == -1) {
             fprintf(stderr, "Communication::sendMessage sendTo() failed\n");
         }

@@ -6,14 +6,18 @@ DetectorController::DetectorController(Data& data)
 }
 
 void DetectorController::update(void) {
-    if (data.image.id % 20 == 0)
+    if (data.image.id % 20 == 0) {
         std::cout << "NEXT POS " << data.image.id << std::endl;
+    }
 
-    if (data.marker[0].getNextPos(data.image, data.pm[0])) {
-        //comm.prepareMessage(&data.pm[0]);
-    } else {
-        //std::cout << "POS " << data.image.id << std::endl;
-        //std::cout << "NOP (1)" << std::endl;
+    for (size_t i=0; i<data.marker.size(); ++i) {
+        if (data.marker[i].getNextPos(data.color_choice, data.image, data.pm[i])) {
+            std::cout << "Found at POS " << data.image.id << std::endl;
+            data.pm[i].display();
+        } else {
+            //std::cout << "POS " << data.image.id << std::endl;
+            //std::cout << "NOP (1)" << std::endl;
+        }
     }
     data.image.id++;
 }

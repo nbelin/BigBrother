@@ -36,9 +36,9 @@ public:
     unsigned short rdv_port = 1234;
 
     std::vector<ColorSet> color_set = {
-        ColorSet(Color(200, 66, 161), 30),
-        ColorSet(Color(47, 95, 85), 30),
-        ColorSet(Color(105, 140, 130), 20)
+//        ColorSet(Color(200, 66, 161), 30),
+//        ColorSet(Color(47, 95, 85), 30),
+//        ColorSet(Color(105, 140, 130), 20)
     };
 
     std::vector<Beacon> beacon {

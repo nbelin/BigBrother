@@ -20,6 +20,7 @@ VideoController::VideoController(Data& data)
 
     if(!cap.isOpened()) {
         std::cout << "Failed to open video" << std::endl;
+        std::cout << "On Rasp, try 'sudo modprobe bcm2835-v4l2' to enable PICam" << std::endl;
         exit(-1);
     }
 
@@ -27,11 +28,10 @@ VideoController::VideoController(Data& data)
 
     // This first (dummy) image is used to initialize buffers in Classes
     data.image = Image3D(data.frame.cols, data.frame.rows, NULL);
-    data.marker.push_back(Marker(data.image, true, darkBlueSet, greenSet, magentaSet));
-    data.pm.push_back(PositionMarker(0));
-    data.pm.push_back(PositionMarker(1));
-    data.pm.push_back(PositionMarker(2));
-    data.pm.push_back(PositionMarker(3));
+
+    for (size_t i=0; i<data.pm.size(); ++i) {
+        data.marker.push_back(getMarker(data.image, data.pm[i].pmID));
+    }
 
 
     // Init VideoWriter to save the camera video to allow playback
@@ -50,5 +50,9 @@ VideoController::VideoController(Data& data)
 
 void VideoController::update(void) {
     cap >> data.frame;
+    if (data.frame.empty()) {
+        std::cout << "Video ends" << std::endl;
+        exit(0);
+    }
     writer << data.frame;
 }

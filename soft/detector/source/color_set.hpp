@@ -7,23 +7,32 @@
 
 class ColorSet {
 private:
-    Color center;
-    unsigned int radius;
+    Color luv_center;
+    unsigned int luv_radius;
+    Color hsv_min;
+    Color hsv_max;
 
 public:
-    inline ColorSet(const Color& color, unsigned int radius)
-        : center(color), radius(radius) {
+    inline ColorSet(const Color& luv_color, unsigned int luv_radius, const Color& hsv_min, const Color& hsv_max)
+        : luv_center(luv_color), luv_radius(luv_radius), hsv_min(hsv_min), hsv_max(hsv_max) {
     }
 
-    inline bool contains(const Color& color) const {
-        return color.v1 > 10 && center.luv_square_dist(color) < radius * radius;
+    inline bool contains(int mode, const Color& color) const {
+        if (mode == Color::HSV) {
+            return hsv_min <= color && color <= hsv_max;
+        }
+        if (mode == Color::LUV) {
+            return color.v1 > 10 && luv_center.luv_square_dist(color) < luv_radius * luv_radius;
+        }
+        std::cout << "Invalid color mode: " << mode << std::endl;
+        return false;
     }
 
 public:
     template<class Archive>
     void serialize(Archive& ar) {
-        ar(CEREAL_NVP(center));
-        ar(CEREAL_NVP(radius));
+        ar(CEREAL_NVP(luv_center));
+        ar(CEREAL_NVP(luv_radius));
     }
 };
 

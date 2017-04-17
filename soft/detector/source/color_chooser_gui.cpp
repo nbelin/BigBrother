@@ -29,16 +29,20 @@ void CallBackFunc(int event, int x, int y, int, void* userdata) {
     if(event == cv::EVENT_LBUTTONDOWN) {
         std::cout << "Left button of the mouse is clicked - position (" << x << ", " << y << ")" << std::endl;
         cv::Vec3b color;
-        color = data.luv.at<cv::Vec3b>(y, x);
-        tab_couleur_luv[couleur][0] = color.val[0];
-        tab_couleur_luv[couleur][1] = color.val[1];
-        tab_couleur_luv[couleur][2] = color.val[2];
-        std::cout << "L=" << tab_couleur_luv[couleur][0] << " U=" << tab_couleur_luv[couleur][1] << " V=" << tab_couleur_luv[couleur][2] << std::endl;
-        color = data.hsv.at<cv::Vec3b>(y, x);
-        tab_couleur_hsv[couleur][0] = color.val[0];
-        tab_couleur_hsv[couleur][1] = color.val[1];
-        tab_couleur_hsv[couleur][2] = color.val[2];
-        std::cout << "H=" << tab_couleur_hsv[couleur][0] << " S=" << tab_couleur_hsv[couleur][1] << " V=" << tab_couleur_hsv[couleur][2] << std::endl;
+        if (data.color_choice & Color::LUV) {
+            color = data.luv.at<cv::Vec3b>(y, x);
+            tab_couleur_luv[couleur][0] = color.val[0];
+            tab_couleur_luv[couleur][1] = color.val[1];
+            tab_couleur_luv[couleur][2] = color.val[2];
+            std::cout << "L=" << tab_couleur_luv[couleur][0] << " U=" << tab_couleur_luv[couleur][1] << " V=" << tab_couleur_luv[couleur][2] << std::endl;
+        }
+        if (data.color_choice & Color::HSV) {
+            color = data.hsv.at<cv::Vec3b>(y, x);
+            tab_couleur_hsv[couleur][0] = color.val[0];
+            tab_couleur_hsv[couleur][1] = color.val[1];
+            tab_couleur_hsv[couleur][2] = color.val[2];
+            std::cout << "H=" << tab_couleur_hsv[couleur][0] << " S=" << tab_couleur_hsv[couleur][1] << " V=" << tab_couleur_hsv[couleur][2] << std::endl;
+        }
         couleur++;
     }
 }
@@ -173,82 +177,99 @@ cv::Mat show_diagram_HSV(int id, int h_acc, int s_min) {
 
 ColorChooserGUI::ColorChooserGUI(Data& data)
     : data(data) {
+    if (data.gui_level < 2) {
+        return;
+    }
     cv::namedWindow("frameToClick");
-    cv::namedWindow("frameLUV_1");
-    cv::namedWindow("frameLUV_2");
-    cv::namedWindow("frameLUV_3");
-    cv::namedWindow("frameHSV_1");
-    cv::namedWindow("frameHSV_2");
-    cv::namedWindow("frameHSV_3");
-    cv::namedWindow("diagLUV_1");
-    cv::namedWindow("diagLUV_2");
-    cv::namedWindow("diagLUV_3");
-    cv::namedWindow("diagHSV_1");
-    cv::namedWindow("diagHSV_2");
-    cv::namedWindow("diagHSV_3");
-    cv::createTrackbar("color acceptance", "diagLUV_1", &radius_1, 150);
-    cv::createTrackbar("color acceptance", "diagLUV_2", &radius_2, 150);
-    cv::createTrackbar("color acceptance", "diagLUV_3", &radius_3, 150);
-    cv::createTrackbar("luminance threshold", "diagLUV_1", &lthreshold_1, 200);
-    cv::createTrackbar("luminance threshold", "diagLUV_2", &lthreshold_2, 200);
-    cv::createTrackbar("luminance threshold", "diagLUV_3", &lthreshold_3, 200);
-    cv::createTrackbar("hue acceptance", "diagHSV_1", &h_accept_1, 30);
-    cv::createTrackbar("hue acceptance", "diagHSV_2", &h_accept_2, 30);
-    cv::createTrackbar("hue acceptance", "diagHSV_3", &h_accept_3, 30);
-    cv::createTrackbar("min saturation", "diagHSV_1", &s_min_1, 200);
-    cv::createTrackbar("min saturation", "diagHSV_2", &s_min_2, 200);
-    cv::createTrackbar("min saturation", "diagHSV_3", &s_min_3, 200);
-    cv::createTrackbar("min value", "diagHSV_1", &v_min_1, 200);
-    cv::createTrackbar("min value", "diagHSV_2", &v_min_2, 200);
-    cv::createTrackbar("min value", "diagHSV_3", &v_min_3, 200);
+    if (data.color_choice & Color::LUV) {
+        cv::namedWindow("frameLUV_1");
+        cv::namedWindow("frameLUV_2");
+        cv::namedWindow("frameLUV_3");
+        cv::namedWindow("diagLUV_1");
+        cv::namedWindow("diagLUV_2");
+        cv::namedWindow("diagLUV_3");
+        cv::createTrackbar("color acceptance", "diagLUV_1", &radius_1, 150);
+        cv::createTrackbar("color acceptance", "diagLUV_2", &radius_2, 150);
+        cv::createTrackbar("color acceptance", "diagLUV_3", &radius_3, 150);
+        cv::createTrackbar("luminance threshold", "diagLUV_1", &lthreshold_1, 200);
+        cv::createTrackbar("luminance threshold", "diagLUV_2", &lthreshold_2, 200);
+        cv::createTrackbar("luminance threshold", "diagLUV_3", &lthreshold_3, 200);
+        cv::setMouseCallback("diagLUV_1", CallBackFunc_diagLUV, &id_1);
+        cv::setMouseCallback("diagLUV_2", CallBackFunc_diagLUV, &id_2);
+        cv::setMouseCallback("diagLUV_3", CallBackFunc_diagLUV, &id_3);
+    }
+    if (data.color_choice & Color::HSV) {
+        cv::namedWindow("frameHSV_1");
+        cv::namedWindow("frameHSV_2");
+        cv::namedWindow("frameHSV_3");
+        cv::namedWindow("diagHSV_1");
+        cv::namedWindow("diagHSV_2");
+        cv::namedWindow("diagHSV_3");
+        cv::createTrackbar("hue acceptance", "diagHSV_1", &h_accept_1, 30);
+        cv::createTrackbar("hue acceptance", "diagHSV_2", &h_accept_2, 30);
+        cv::createTrackbar("hue acceptance", "diagHSV_3", &h_accept_3, 30);
+        cv::createTrackbar("min saturation", "diagHSV_1", &s_min_1, 200);
+        cv::createTrackbar("min saturation", "diagHSV_2", &s_min_2, 200);
+        cv::createTrackbar("min saturation", "diagHSV_3", &s_min_3, 200);
+        cv::createTrackbar("min value", "diagHSV_1", &v_min_1, 200);
+        cv::createTrackbar("min value", "diagHSV_2", &v_min_2, 200);
+        cv::createTrackbar("min value", "diagHSV_3", &v_min_3, 200);
+        cv::setMouseCallback("diagHSV_1", CallBackFunc_diagHSV, &id_1);
+        cv::setMouseCallback("diagHSV_2", CallBackFunc_diagHSV, &id_2);
+        cv::setMouseCallback("diagHSV_3", CallBackFunc_diagHSV, &id_3);
+    }
 
     cv::setMouseCallback("frameToClick", CallBackFunc, &data);
-    cv::setMouseCallback("diagLUV_1", CallBackFunc_diagLUV, &id_1);
-    cv::setMouseCallback("diagLUV_2", CallBackFunc_diagLUV, &id_2);
-    cv::setMouseCallback("diagLUV_3", CallBackFunc_diagLUV, &id_3);
-    cv::setMouseCallback("diagHSV_1", CallBackFunc_diagHSV, &id_1);
-    cv::setMouseCallback("diagHSV_2", CallBackFunc_diagHSV, &id_2);
-    cv::setMouseCallback("diagHSV_3", CallBackFunc_diagHSV, &id_3);
 }
 
 
 void ColorChooserGUI::update(void) {
+    if (data.gui_level < 2) {
+        return;
+    }
+
     cv::imshow("frameToClick", data.frame);
     //cv::imshow("data.hsv", data.hsv);
     if ( couleur >= 1 ) {
-        // LUV
-        frame = show_color_LUV(data.frame, data.luv, 0, radius_1, lthreshold_1);
-        cv::imshow("frameLUV_1", frame);
-        frame = show_diagram_LUV(0, radius_1, lthreshold_1);
-        cv::imshow("diagLUV_1", frame);
-        // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 0, h_accept_1, s_min_1, v_min_1);
-        cv::imshow("frameHSV_1", frame);
-        frame = show_diagram_HSV(0, h_accept_1, s_min_1);
-        cv::imshow("diagHSV_1", frame);
+        if (data.color_choice & Color::LUV) {
+            frame = show_color_LUV(data.frame, data.luv, 0, radius_1, lthreshold_1);
+            cv::imshow("frameLUV_1", frame);
+            frame = show_diagram_LUV(0, radius_1, lthreshold_1);
+            cv::imshow("diagLUV_1", frame);
+        }
+        if (data.color_choice & Color::HSV) {
+            frame = show_color_HSV(data.frame, data.hsv, 0, h_accept_1, s_min_1, v_min_1);
+            cv::imshow("frameHSV_1", frame);
+            frame = show_diagram_HSV(0, h_accept_1, s_min_1);
+            cv::imshow("diagHSV_1", frame);
+        }
     }
     if ( couleur >= 2 ) {
-        // LUV
-        frame = show_color_LUV(data.frame, data.luv, 1, radius_2, lthreshold_2);
-        cv::imshow("frameLUV_2", frame);
-        frame = show_diagram_LUV(1, radius_2, lthreshold_2);
-        cv::imshow("diagLUV_2", frame);
-        // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 1, h_accept_2, s_min_2, v_min_2);
-        cv::imshow("frameHSV_2", frame);
-        frame = show_diagram_HSV(1, h_accept_2, s_min_2);
-        cv::imshow("diagHSV_2", frame);
+        if (data.color_choice & Color::LUV) {
+            frame = show_color_LUV(data.frame, data.luv, 1, radius_2, lthreshold_2);
+            cv::imshow("frameLUV_2", frame);
+            frame = show_diagram_LUV(1, radius_2, lthreshold_2);
+            cv::imshow("diagLUV_2", frame);
+        }
+        if (data.color_choice & Color::HSV) {
+            frame = show_color_HSV(data.frame, data.hsv, 1, h_accept_2, s_min_2, v_min_2);
+            cv::imshow("frameHSV_2", frame);
+            frame = show_diagram_HSV(1, h_accept_2, s_min_2);
+            cv::imshow("diagHSV_2", frame);
+        }
     }
     if ( couleur >= 3 ) {
-        // LUV
-        frame = show_color_LUV(data.frame, data.luv, 2, radius_3, lthreshold_3);
-        cv::imshow("frameLUV_3", frame);
-        frame = show_diagram_LUV(2, radius_3, lthreshold_3);
-        cv::imshow("diagLUV_3", frame);
-        // HSV
-        frame = show_color_HSV(data.frame, data.hsv, 2, h_accept_3, s_min_3, v_min_3);
-        cv::imshow("frameHSV_3", frame);
-        frame = show_diagram_HSV(2, h_accept_3, s_min_3);
-        cv::imshow("diagHSV_3", frame);
+        if (data.color_choice & Color::LUV) {
+            frame = show_color_LUV(data.frame, data.luv, 2, radius_3, lthreshold_3);
+            cv::imshow("frameLUV_3", frame);
+            frame = show_diagram_LUV(2, radius_3, lthreshold_3);
+            cv::imshow("diagLUV_3", frame);
+        }
+        if (data.color_choice & Color::HSV) {
+            frame = show_color_HSV(data.frame, data.hsv, 2, h_accept_3, s_min_3, v_min_3);
+            cv::imshow("frameHSV_3", frame);
+            frame = show_diagram_HSV(2, h_accept_3, s_min_3);
+            cv::imshow("diagHSV_3", frame);
+        }
     }
 }

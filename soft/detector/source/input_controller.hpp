@@ -6,7 +6,7 @@
 class InputController {
 private:
     Data& data;
-    void show_help_and_exit(void);
+    void show_help_and_exit(const char * errMsg = nullptr);
 public:
     InputController(Data& data, int argc, char* argv[]);
 

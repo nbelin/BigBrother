@@ -4,21 +4,20 @@
 #include <iostream>
 #include <stack>
 
-Rectangle::Rectangle(void) : color_set(Color(0,0,0), 0) {}
-Rectangle::Rectangle(const Color& average, unsigned int radius) : color_set(average, radius) {}
+Rectangle::Rectangle(void) : color_set(Color(0,0,0), 0, Color(0,0,0), Color(0,0,0)) {}
 Rectangle::Rectangle(const ColorSet& color_set) : color_set(color_set) {}
 
-bool Rectangle::isPixelRightColor(const Image3D& image, unsigned int i, unsigned int j) const {
-    return color_set.contains(image.getValue(i, j));
+bool Rectangle::isPixelRightColor(int color_mode, const Image3D& image, unsigned int i, unsigned int j) const {
+    return color_set.contains(color_mode, image.getValue(i, j));
 }
 
-void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsigned int i, unsigned int j) {
+void Rectangle::expandArea(int color_mode, const Image3D& image, Image& mask, Area& area, unsigned int i, unsigned int j) {
     //direction is : LEFT, RIGHT, UP, DOWN
     static const int DIRI[] = {-1,  1,  0,  0};
     static const int DIRJ[] = { 0,  0, -1,  1};
-    static const Color MAXDIFFCOLOR = Color(1, 1, 1);
+    static const Color MAXDIFFCOLOR = Color(4, 4, 4);
 
-    if (isPixelRightColor(image, i, j) == 0) {
+    if (isPixelRightColor(color_mode, image, i, j) == false) {
         area.size = 0;
         return;
     }
@@ -58,7 +57,7 @@ void Rectangle::expandArea(const Image3D& image, Image& mask, Area& area, unsign
 
             //if not visited yet AND is right color AND diff color is not too important
             if ((mask.isInside(ni, nj) && mask.getValue(ni, nj) == 0) &&
-                    (isPixelRightColor(image, ni, nj)|| image.differenceAbsColor(i, j, ni, nj) <= MAXDIFFCOLOR)) {
+                    (isPixelRightColor(color_mode, image, ni, nj)|| image.differenceAbsColor(i, j, ni, nj) <= MAXDIFFCOLOR)) {
                 stackI.push(ni);
                 stackJ.push(nj);
                 mask.setValue(ni, nj, 1);
@@ -90,12 +89,12 @@ void Rectangle::rateArea(Area& area) {
      * The full height (2.5 cm) is often fully seen.
      * The full width (8 cm) is often NOT fully seen.
      * We want that :
-     *  - the width is at least twice the height
-     *  - the width is at most 6 times the height
+     *  - the width is at least once the height
+     *  - the width is at most 8 times the height
      * Further checks will be done at higher level
      */
     unsigned int ratio = area.width / area.height;
-    if (ratio < 2 || ratio > 5) {
+    if (ratio < 1 || ratio > 7) {
         area.rank = 0;
         //std::cout << ratio << std::endl;
         //std::cout << area.width << " / " << area.height << std::endl;

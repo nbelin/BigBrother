@@ -14,12 +14,16 @@
 
 int main(int argc, char* argv[]) {
     Data data;
+    data.gui_level = 0;
+    data.color_choice = Color::HSV;
     Config config;
 
+    /*
     std::cout << "CONFIG" << std::endl;
     cereal::JSONOutputArchive ar(std::cout);
     ar(CEREAL_NVP(config));
     std::cout << std::endl;
+    */
 
     InputController input(data, argc, argv);
     VideoController video(data);

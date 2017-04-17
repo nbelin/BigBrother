@@ -12,6 +12,9 @@ public:
     }
 
     void update(void) {
+        if ((data.color_choice & Color::HSV) == 0) {
+            return;
+        }
         cv::cvtColor(data.frame, data.hsv, CV_BGR2HSV);
         assert(data.hsv.data != nullptr);
         data.image.setData(data.hsv.data);

@@ -4,7 +4,8 @@
 #include <cstdlib>
 #include <algorithm>
 
-Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) : isEnemy(isEnemy) {
+Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) :
+    isEnemy(isEnemy) {
 
     rects[0] = rect1;
     rects[1] = rect2;
@@ -21,7 +22,8 @@ Marker::Marker(const Image3D& firstImage, bool isEnemy, const ColorSet& rect1, c
     : Marker(firstImage, isEnemy, Rectangle(rect1), Rectangle(rect2), Rectangle(rect3)) {
 }
 
-bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
+bool Marker::getNextPos(int color_mode, const Image3D& image, PositionMarker &nextPos) {
+    this->colorMode = color_mode;
     //std::cout << "getNextPos !" << std::endl;
     nextPos.reset();
     for (int i=0; i<3; ++i) {
@@ -31,23 +33,20 @@ bool Marker::getNextPos(const Image3D& image, PositionMarker &nextPos) {
     if (isMarkerFound(previousPos)) {
         unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2;
         unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2;
-        detectFromPoint(image, nextPos, startI, startJ);
-        //detectFromPrevious(image, nextPos);
-        if (isMarkerFound(nextPos)) {
+        if (detectFromPoint(image, nextPos, startI, startJ)) {
             previousPos = nextPos;
             return true;
         }
-        std::cout << "not found 1st : " << startI << ", " << startJ << std::endl;
+        //std::cout << "not found 1st : " << startI << ", " << startJ << std::endl;
         for (int di=-1; di<2; ++di) {
             for (int dj=-1; dj<2; ++dj) {
-                detectFromPoint(image, nextPos, startI+di, startJ+dj);
-                if (isMarkerFound(nextPos)) {
+                if (detectFromPoint(image, nextPos, startI+di, startJ+dj)) {
                     previousPos = nextPos;
                     return true;
                 }
             }
         }
-        std::cout << "not found even after square" << std::endl;
+        //std::cout << "not found even after square" << std::endl;
     }
 
     //std::cout << "previous marker not found ?" << std::endl;
@@ -61,13 +60,13 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
         return false;
     }
 
-    if (masks[0].getValue(startI, startJ) == 0 && rects[0].isPixelRightColor(image, startI, startJ)) {
+    if (masks[0].getValue(startI, startJ) == 0 && rects[0].isPixelRightColor(colorMode, image, startI, startJ)) {
 
-        rects[0].expandArea(image, masks[0], previousAreas[0], startI, startJ);
+        rects[0].expandArea(colorMode, image, masks[0], previousAreas[0], startI, startJ);
 
         rects[0].rateArea(previousAreas[0]);
         //previousAreas[0].display();
-        if (previousAreas[0].rank < 0.6) {
+        if (previousAreas[0].rank < 0.5) {
             return false;
         }
 
@@ -81,26 +80,26 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
         const unsigned int iMax = std::max(previousAreas[0].maxI + 10, image.height);
 
         for (unsigned int ni = startI; ni < iMax; ++ni) {
-            if (rects[1].isPixelRightColor(image, ni, nj)) {
+            if (rects[1].isPixelRightColor(colorMode, image, ni, nj)) {
 
-                rects[1].expandArea(image, masks[1], previousAreas[1], ni, nj);
+                rects[1].expandArea(colorMode, image, masks[1], previousAreas[1], ni, nj);
 
                 rects[1].rateArea(previousAreas[1]);
                 //previousAreas[1].display();
-                if (previousAreas[1].rank < 0.6) {
+                if (previousAreas[1].rank < 0.5) {
                     return false;
                 }
 
                 const unsigned int iMax = std::max(previousAreas[1].maxI + 10, image.height);
 
                 for (unsigned int nni = startI; nni < iMax; ++nni) {
-                    if (rects[2].isPixelRightColor(image, nni, nj)) {
+                    if (rects[2].isPixelRightColor(colorMode, image, nni, nj)) {
 
-                        rects[2].expandArea(image, masks[2], previousAreas[2], nni, nj);
+                        rects[2].expandArea(colorMode, image, masks[2], previousAreas[2], nni, nj);
 
                         rects[1].rateArea(previousAreas[2]);
                         //previousAreas[2].display();
-                        if (previousAreas[2].rank < 0.6) {
+                        if (previousAreas[2].rank < 0.5) {
                             return false;
                         }
 
@@ -109,8 +108,8 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
                             previousPos = nextPos;
                             return true;
                         }
-                        std::cout << "oh almost :(" << std::endl;
-                        nextPos.display();
+                        //std::cout << "oh almost :(" << std::endl;
+                        //nextPos.display();
                     }
                 }
             }
@@ -134,7 +133,7 @@ bool Marker::detectFromPrevious(const Image3D& image, PositionMarker& nextPost) 
     for (size_t id=0; id<3; ++id) {
         const unsigned int startI = (previousAreas[id].maxI + previousAreas[id].minI)/2;
         const unsigned int startJ = (previousAreas[id].maxJ + previousAreas[id].minJ)/2;
-        rects[id].expandArea(image, masks[id], previousAreas[id], startI, startJ);
+        rects[id].expandArea(colorMode, image, masks[id], previousAreas[id], startI, startJ);
         rects[id].rateArea(previousAreas[id]);
         if (previousAreas[id].rank < 0.5) {
             return false;
@@ -165,18 +164,22 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
     // feed most properties for PositionMarker (except confidence)
     pm.imageID = image.id;
     pm.x = ( meanMinJ + meanMaxJ ) / 2;
-    pm.size = meanMaxJ - meanMinJ;
     pm.minI = previousAreas[0].minI;
     pm.maxI = previousAreas[2].maxI;
+    pm.size = pm.maxI - pm.minI; // (height)
     if (isMarkerFound(previousPos)) {
-        pm.dx = (int)previousPos.x - (int)pm.x;
-        pm.dsize = (int)previousPos.size - (int)pm.size;
+        pm.dx = (int)pm.x - (int)previousPos.x;
+        pm.dsize = (int)pm.size - (int)previousPos.size;
     }
 
     // make sure each detected area is close from each other
-    unsigned int distBetweenAreas = 0;
     for (size_t id=1; id<3; ++id) {
-        distBetweenAreas += absdiff(previousAreas[id-1].maxI, previousAreas[id].minI);
+        unsigned int distBetweenAreas = absdiff(previousAreas[id-1].maxI, previousAreas[id].minI);
+        if (distBetweenAreas > 20) {
+            std::cout << "distBetweenAreas too large: " << distBetweenAreas << std::endl;
+            pm.confidence = 0.f;
+            return;
+        }
     }
 
     // compute difference with the mean
@@ -189,9 +192,15 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
         distMaxJ += absdiff(meanMaxJ, previousAreas[id].maxJ);
     }
 
-    // compute difference between (mean)width and height
-    unsigned int height = pm.maxI - pm.minI;
-    unsigned int diffWidthHeight = absdiff(pm.size, height);
+    // width cannot be greater than height
+    // width could be a bit smaller than height if not fully seen
+    unsigned int width = meanMaxJ - meanMinJ;
+    float ratio = (float) pm.size / width;
+    if (ratio < 0.7f || ratio > 3.f) {
+        std::cout << "ratio not good: " << ratio << std::endl;
+        pm.confidence = 0.f;
+        return;
+    }
 
     // compute distance from middle of image (depending enemy or not)
     unsigned int distFromMiddle;
@@ -201,12 +210,16 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
     } else {
         distFromMiddle = absdiff(imageMiddleHeight, pm.minI);
     }
+    if (distFromMiddle > 30) {
+        std::cout << "distFromMiddle too large: " << distFromMiddle << std::endl;
+        pm.confidence = 0.f;
+        return;
+    }
 
-    float confidence_distFromMiddle = 0.05f * (float) distFromMiddle / (float) pm.size;
-    float confidence_diffWidthHeight = 0.5f * (float) diffWidthHeight / (float) pm.size;
-    //std::cout << "conf_distFromMiddle=" << confidence_distFromMiddle << std::endl;
+    float confidence_distJ = 0.5f * (float) (distMinJ + distMaxJ) / (float) pm.size;
+    std::cout << "OK :) conf_distJ=" << confidence_distJ << std::endl;
     //std::cout << "conf_diffWidthHeight=" << confidence_diffWidthHeight << std::endl;
-    pm.confidence = 1.f - confidence_distFromMiddle - confidence_diffWidthHeight;
+    pm.confidence = 1.f - confidence_distJ;
 }
 
 bool Marker::isMarkerFound(const PositionMarker& pm) {

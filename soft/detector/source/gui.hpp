@@ -13,7 +13,7 @@ private:
 
 private:
     void addRectangle(const PositionMarker& pm);
-    void addMask(const Image& msk);
+    void addMask(const Image& msk, const cv::Scalar& color);
 
 public:
     GUI(Data& data);
