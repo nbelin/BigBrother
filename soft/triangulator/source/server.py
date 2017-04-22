@@ -219,7 +219,7 @@ class Camera:
 		for i in range(4):
 			self.markers.append(Marker(i))
 
-	def update(self, msg):
+	def update(self, msg, curTime):
 		fields = msg.split(" ")
 		if self.id != int(fields[0]):
 			print "ERROR camera id " + fields[0] + " != " + str(self.id)
@@ -230,12 +230,12 @@ class Camera:
 			if i % 4 == 0:
 				marker = self.markers[int(fields[i + 1])]
 			elif i % 4 == 1:
-				marker.x = float(fields[i + 1])
+				marker.angle = float(fields[i + 1])
 			elif i % 4 == 2:
-				marker.height = float(fields[i + 1])
+				marker.distance = int(fields[i + 1])
 			elif i % 4 == 3:
 				marker.confidence = float(fields[i + 1])
-				marker.last_update = time.time()
+				marker.last_update = curTime
 
 	def debug(self):
 		print ">> I'm camera #" + str(self.id)
@@ -314,7 +314,7 @@ while True:
 		now = time.time()
 		diff = now - last_time_update
 		if diff > 0.15:
-			print str(now)
+			#print str(now)
 			msg = ""
 			for rob in robots:
 				if rob.updatePos(now):
@@ -328,7 +328,7 @@ while True:
 		for i in range(len(cameras)):
 			data, addr = sock_cameras.recvfrom(1024)
 			cam_id = int(data[0])
-			cameras[cam_id].update(data)
+			cameras[cam_id].update(data, now)
 		#cameras[cam_id].debug()
 
 		# listen to any client who wants information
