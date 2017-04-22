@@ -7,17 +7,15 @@
 #include "marker.hpp"
 
 #include "data.hpp"
-#include "config.hpp"
 
 class Communication {
 public:
-    Communication(Data& data, Config& config);
+    Communication(Data& data);
     virtual ~Communication();
     void sendMessage();
 public:
     void update(void);
 private:
-    int cameraId;
     int socketId;
     struct sockaddr_in socketAddr;
     static const int BUFFLEN = 1024;

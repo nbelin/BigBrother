@@ -1,5 +1,4 @@
 #include "data.hpp"
-#include "config.hpp"
 
 #include "gui.hpp"
 #include "color_chooser_gui.hpp"
@@ -16,7 +15,6 @@ int main(int argc, char* argv[]) {
     Data data;
     data.gui_level = 0;
     data.color_choice = Color::HSV;
-    Config config;
 
     /*
     std::cout << "CONFIG" << std::endl;
@@ -31,7 +29,7 @@ int main(int argc, char* argv[]) {
     LUVController luv(data);
     DetectorController detector(data);
     GUI gui(data);
-    Communication comm(data, config);
+    Communication comm(data);
     ColorChooserGUI ccgui(data);
 
     std::cout << "start loop" << std::endl;
