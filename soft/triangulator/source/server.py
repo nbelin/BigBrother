@@ -170,7 +170,6 @@ class Gui:
 			return Gui.BLUE
 		if Id == 4:
 			return Gui.YELLOW
-		
 
 	@staticmethod
 	def initGui():
@@ -203,9 +202,9 @@ class Gui:
 				color = Gui.colorFromId(mark.id)
 				thickness = 2
 				difTime = curTime - mark.last_update
-				if difTime > 8:
+				if difTime > 2:
 					continue
-				elif difTime > 4:
+				elif difTime > 1:
 					thickness = 1
 				start_line = Gui.realPos2Gui(cam.pos)
 				end_line = Gui.realPos2Gui(cam.pos + 2*mark.distance*anglesToVector(mark.angle, cam.angle))
@@ -216,7 +215,7 @@ class Gui:
 			if rob.found == False:
 				continue
 			difTime = curTime - rob.last_update
-			if difTime > 8:
+			if difTime > 2:
 				continue
 			center = Gui.realPos2Gui(rob.pos)
 			rad = Gui.realDist2Gui(rob.radius)
@@ -242,8 +241,8 @@ class Robot:
 		detectedMarkers = []
 		for cam in cameras:
 			diffTime = curTime - cam.markers[self.id - 1].last_update
-			if diffTime < 8:
-				# if diffTime is > 1 second, consider information is out of date
+			if diffTime < 2:
+				# if diffTime is > 2 seconds, consider information is out of date
 				detectedCameras.append(cam)
 				detectedMarkers.append(cam.markers[self.id - 1])
 		self.last_update = curTime
@@ -395,43 +394,6 @@ sock_cameras.bind(("", UDP_PORT))
 sock_cameras.settimeout(0)
 
 # last info received from cameras
-#### data to test perf and corner cases
-cameras[0].markers[0].last_update = time.time()
-cameras[1].markers[0].last_update = time.time()
-cameras[2].markers[0].last_update = time.time()
-cameras[0].markers[0].angle = -0.39
-cameras[1].markers[0].angle = 0.39
-cameras[2].markers[0].angle = -0.01
-cameras[0].markers[0].distance = 800
-cameras[1].markers[0].distance = 1000
-cameras[2].markers[0].distance = 2582
-cameras[0].markers[1].last_update = time.time()
-cameras[1].markers[1].last_update = time.time()
-cameras[2].markers[1].last_update = time.time()
-cameras[0].markers[1].angle = -0.22
-cameras[1].markers[1].angle = 0.29
-cameras[2].markers[1].angle = -0.09
-cameras[0].markers[1].distance = 900
-cameras[1].markers[1].distance = 1400
-cameras[2].markers[1].distance = 2382
-cameras[0].markers[2].last_update = time.time()
-cameras[1].markers[2].last_update = time.time()
-cameras[2].markers[2].last_update = time.time()
-cameras[0].markers[2].angle = -0.19
-cameras[1].markers[2].angle = 0.04
-cameras[2].markers[2].angle = 0.07
-cameras[0].markers[2].distance = 1600
-cameras[1].markers[2].distance = 1100
-cameras[2].markers[2].distance = 1582
-cameras[0].markers[3].last_update = time.time()
-cameras[1].markers[3].last_update = time.time()
-cameras[2].markers[3].last_update = time.time()
-cameras[0].markers[3].angle = 0.42
-cameras[1].markers[3].angle = -0.04
-cameras[2].markers[3].angle = -0.48
-cameras[0].markers[3].distance = 2600
-cameras[1].markers[3].distance = 3200
-cameras[2].markers[3].distance = 1382
 
 
 if use_gui:
