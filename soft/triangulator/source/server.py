@@ -6,6 +6,7 @@ import socket
 import sys
 import time
 import numpy
+import pygame
 
 
 def anglesToVector(angle_cam, angle_mark):
@@ -71,18 +72,18 @@ def posFrom3Cameras(cams, markers, curTime):
 	dist12 = distPos(res, pos12)
 	dist23 = distPos(res, pos23)
 	dist13 = distPos(res, pos13)
-	if dist12 > rad12 + 200 or dist23 > rad23 + 200 or dist13 > rad13 + 200:
+	if dist12 > rad12 + 300 or dist23 > rad23 + 300 or dist13 > rad13 + 300:
 		return [], -1
 	# radxy is at best ~80, and at worst ~550
 	# radSum should be between 240 and 1650
 	# let's make some more magic to compute the final radius
-	# let's take the sum divided by 8 (so between 30 and 200)
+	# let's take the sum divided by 12 (so between 20 and 137)
 	# the distances should be between 40mm and 400mm
 	# let's divide them by 4 (to have something between 10mm and 100mm)
 	# => final radius should be between 40mm and 300mm
 	radSum = rad12 + rad23 + rad13
 	distSum = dist12 + dist23 + dist13
-	return res, radSum/8 + distSum/4
+	return res, int( radSum/12 + distSum/4 )
 
 def posFrom2Cameras(cams, markers, curTime):
 	# x = x1 + k1*vx1
@@ -91,7 +92,7 @@ def posFrom2Cameras(cams, markers, curTime):
 	#   = y2 + k2*vy2
 	pos1, rad1, vec1 = posFrom1Camera(cams[0], markers[0], curTime)
 	pos2, rad2, vec2 = posFrom1Camera(cams[1], markers[1], curTime)
-	if distPos(pos1, pos2) > rad1 + rad2 + 400:
+	if distPos(pos1, pos2) > rad1 + rad2 + 500:
 		# don't bother to go further, if the approximate points viewed by the cameras are to far from each other
 		return [], -1
 	# first, check if vectors are (slightly) collinear because line intersection does not work in this case
@@ -102,10 +103,10 @@ def posFrom2Cameras(cams, markers, curTime):
 			# information not good enough
 			return [], -1
 		res = numpy.array(centroid([pos1, pos2], [rad1, rad2]))
-		# rad1 and rad2 are at best ~100, and at worst ~900
+		# rad1 and rad2 are at best ~100, and at worst ~1000
 		# dist12/2 is expected to be somewhere between 50mm and 400mm
-		# (rad1+rad2)/4 is between 50mm and 450mm
-		radius = 30 + dist12/2 + (rad1 + rad2)/4
+		# (rad1+rad2)/4 is between 50mm and 500mm
+		radius = int( 30 + dist12/2 + (rad1 + rad2)/4 )
 		return res, radius
 	
 	# line intersection
@@ -117,10 +118,10 @@ def posFrom2Cameras(cams, markers, curTime):
 	if D == 0:
 		# lines do not intersect, should not happen because collinearity already tested
 		return [], -1
-	res = numpy.array([ Dx/float(D), Dy/float(D) ])
+	res = numpy.array(map(int, [ Dx/float(D), Dy/float(D) ]))
 	dist1 = distPos(pos1, res)
 	dist2 = distPos(pos2, res)
-	if dist1 > rad1 + 300 or dist2 > rad2 + 300:
+	if dist1 > rad1 + 400 or dist2 > rad2 + 400:
 		return [], -1
 
 	# rad1 and rad2 are at best ~100, and at worst ~900
@@ -128,7 +129,7 @@ def posFrom2Cameras(cams, markers, curTime):
 	# the sum of distances is expected somewhere to be between 100mm and 1200mm
 	# the sum divided by 4 is expected to be between 25mm and 300mm
 	# which means 50mm at best, 525mm at worst, => let's add a 30mm flat malus
-	radius = 30 + (rad1 + rad2) / 6 + (dist1 + dist2) / 4
+	radius = int( 30 + (rad1 + rad2) / 6 + (dist1 + dist2) / 4 )
 	return res, radius
 
 def posFrom1Camera(cam, marker, curTime):
@@ -138,21 +139,100 @@ def posFrom1Camera(cam, marker, curTime):
 	# the closer the robot to the camera, the more accurate the distance information
 	# if the robot detection is recent, the information is more accurate (consider robot's speed is ~200mm/sec)
 	# for example:
-	#  > 1 second old + 3500 mm from camera => worst case => radius = 200+700 = 900 mm
-	#  > 0.1 second old + 400 mm from camera => almost best case => radius = 20+80 = 100 mm
-	#  > 0.5 second old + 500 mm from camera => close but old => radius = 100+100 = 200 mm
-	#  > 0.2 second old + 2500 mm from camera => far but recent => radius = 40+500 = 540 mm
-	#  > 0.3 second old + 1500 mm from camera => medium case => radius = 60+300 = 360 mm
-	radius = int(diffTime * 200 + marker.distance * 0.2)
+	#  > 1 second old + 3500 mm from camera => worst case => radius = 200+875 = 1075 mm
+	#  > 0.1 second old + 400 mm from camera => almost best case => radius = 20+100 = 120 mm
+	#  > 0.5 second old + 500 mm from camera => close but old => radius = 100+125 = 225 mm
+	#  > 0.2 second old + 2500 mm from camera => far but recent => radius = 40+625 = 665 mm
+	#  > 0.3 second old + 1500 mm from camera => medium case => radius = 60+375 = 435 mm
+	radius = int(diffTime * 200 + marker.distance * 0.25)
 	return numpy.array(pos), radius, vector
 
+class Gui:
+	@staticmethod
+	def realPos2Gui(pos):
+		# pos is between (-1500, 2000) and (1500, 0)
+		# must return something between (50, 80) and (650, 480)
+		x = int( ( ( pos[0] + 1500.0 ) / 3000.0 ) * 600.0 + 70)
+		y = int( ( ( 2000 - pos[1] ) / 2000.0 ) * 400.0 + 100)
+		return [x, y]
+
+	@staticmethod
+	def realDist2Gui(dist):
+		return int( dist*600.0 / 3000.0 )
+
+	@staticmethod
+	def colorFromId(Id):
+		if Id == 1:
+			return Gui.RED
+		if Id == 2:
+			return Gui.GREEN
+		if Id == 3:
+			return Gui.BLUE
+		if Id == 4:
+			return Gui.YELLOW
+		
+
+	@staticmethod
+	def initGui():
+		Gui.BLACK = (0, 0, 0)
+		Gui.WHITE = (255, 255, 255)
+		Gui.RED = (255, 0, 0)
+		Gui.GREEN = (0, 255, 0)
+		Gui.BLUE = (0, 0, 255)
+		Gui.YELLOW = (255, 255, 0)
+		pygame.init()
+		Gui.font = pygame.font.SysFont("monospace", 25)
+		Gui.window = pygame.display.set_mode((740, 570), 0, 32)
+		Gui.drawTable()
+
+	@staticmethod
+	def drawTable():
+		Gui.window.fill(Gui.WHITE)
+		pygame.draw.rect(Gui.window, Gui.BLACK, (70, 100, 600, 400), 2)
+		pygame.display.update()
+		for cam in cameras:
+			pygame.draw.circle(Gui.window, Gui.BLACK, Gui.realPos2Gui(cam.pos), 15, 2)
+
+	@staticmethod
+	def updateGui(curTime):
+		Gui.drawTable()
+		Gui.timetext = Gui.font.render("Time: " + str(curTime), True, Gui.BLACK, Gui.WHITE)
+		Gui.window.blit(Gui.timetext, (50, 20))
+		for cam in cameras:
+			for mark in cam.markers:
+				color = Gui.colorFromId(mark.id)
+				thickness = 2
+				difTime = curTime - mark.last_update
+				if difTime > 8:
+					continue
+				elif difTime > 4:
+					thickness = 1
+				start_line = Gui.realPos2Gui(cam.pos)
+				end_line = Gui.realPos2Gui(cam.pos + 2*mark.distance*anglesToVector(mark.angle, cam.angle))
+				approx_point = Gui.realPos2Gui(cam.pos + mark.distance*anglesToVector(mark.angle, cam.angle))
+				pygame.draw.line(Gui.window, color, start_line, end_line, thickness)
+				pygame.draw.circle(Gui.window, color, approx_point, 3+thickness, 3+thickness)
+		for rob in robots:
+			if rob.found == False:
+				continue
+			difTime = curTime - rob.last_update
+			if difTime > 8:
+				continue
+			center = Gui.realPos2Gui(rob.pos)
+			rad = Gui.realDist2Gui(rob.radius)
+			color = Gui.colorFromId(rob.id)
+			pygame.draw.circle(Gui.window, color, center, rad, 2)
+		pygame.display.update()
+
 class Robot:
-	def __init__(self, id):
-		self.id = id
-		self.idstr = " R" + str(id) + " "
+	def __init__(self, Id):
+		self.id = Id
+		self.idstr = " R" + str(Id) + " "
 		self.pos = [0, 0]
 		self.radius = 0
 		self.cameras = []
+		self.last_update = 0
+		self.found = False
 
 	def addCamera(self, camera):
 		self.cameras.append(camera)
@@ -161,28 +241,34 @@ class Robot:
 		detectedCameras = []
 		detectedMarkers = []
 		for cam in cameras:
-			diffTime = curTime - cam.markers[self.id].last_update
-			if diffTime < 1:
+			diffTime = curTime - cam.markers[self.id - 1].last_update
+			if diffTime < 8:
 				# if diffTime is > 1 second, consider information is out of date
 				detectedCameras.append(cam)
-				detectedMarkers.append(cam.markers[self.id])
+				detectedMarkers.append(cam.markers[self.id - 1])
+		self.last_update = curTime
 		if len(detectedCameras) == 0:
 			# robot has not been detected by any camera
+			self.found = False
+			self.radius = 0
 			return False
 
 		if len(detectedCameras) == 1:
 			# only one camera... let's try anyway to send some information
 			self.pos, self.radius, vec = posFrom1Camera(detectedCameras[0], detectedMarkers[0], curTime)
-			return self.radius >= 0 and isInTable(self.pos, self.radius)
+			self.found = self.radius >= 0 and isInTable(self.pos, self.radius)
+			return self.found
 
 		if len(detectedCameras) == 2:
 			# classic case: simple line intersection
 			self.pos, self.radius = posFrom2Cameras(detectedCameras, detectedMarkers, curTime)
-			return self.radius >= 0 and isInTable(self.pos, self.radius)
+			self.found = self.radius >= 0 and isInTable(self.pos, self.radius)
+			return self.found
 
 		# best scenario, the robot has been detected by the 3 cameras!
 		self.pos, self.radius = posFrom3Cameras(detectedCameras, detectedMarkers, curTime)
-		return self.radius >= 0 and isInTable(self.pos, self.radius)
+		self.found = self.radius >= 0 and isInTable(self.pos, self.radius)
+		return self.found
 
 	def getMessage(self):
 		return self.idstr + str(self.pos[0]) + " " + str(self.pos[1]) + " " + str(self.radius)
@@ -195,8 +281,8 @@ class Robot:
 		print ""
 
 class Marker:
-	def __init__(self, id):
-		self.id = id
+	def __init__(self, Id):
+		self.id = Id
 		self.angle = 0
 		self.distance = 0
 		self.confidence = 0
@@ -211,13 +297,13 @@ class Marker:
 		print ""
 
 class Camera:
-	def __init__(self, id, pos, angle):
-		self.id = id
+	def __init__(self, Id, pos, angle):
+		self.id = Id
 		self.pos = numpy.array(map(float, pos))
 		self.angle = float(angle)
 		self.markers = []
 		for i in range(4):
-			self.markers.append(Marker(i))
+			self.markers.append(Marker(i+1))
 
 	def update(self, msg, curTime):
 		fields = msg.split(" ")
@@ -256,6 +342,11 @@ UDP_PORT = 0
 cameras = []
 robots = []
 last_time_update = 0
+use_gui = False
+for arg in sys.argv:
+	if arg == "-g":
+		use_gui = True
+
 
 # parse configuration
 try:
@@ -285,7 +376,7 @@ config_file.close()
 
 # init robots
 for i in range(4):
-	robots.append(Robot(i))
+	robots.append(Robot(i+1))
 	for cam in range(3):
 		robots[i].addCamera(cameras[cam])
 
@@ -304,6 +395,47 @@ sock_cameras.bind(("", UDP_PORT))
 sock_cameras.settimeout(0)
 
 # last info received from cameras
+#### data to test perf and corner cases
+cameras[0].markers[0].last_update = time.time()
+cameras[1].markers[0].last_update = time.time()
+cameras[2].markers[0].last_update = time.time()
+cameras[0].markers[0].angle = -0.39
+cameras[1].markers[0].angle = 0.39
+cameras[2].markers[0].angle = -0.01
+cameras[0].markers[0].distance = 800
+cameras[1].markers[0].distance = 1000
+cameras[2].markers[0].distance = 2582
+cameras[0].markers[1].last_update = time.time()
+cameras[1].markers[1].last_update = time.time()
+cameras[2].markers[1].last_update = time.time()
+cameras[0].markers[1].angle = -0.22
+cameras[1].markers[1].angle = 0.29
+cameras[2].markers[1].angle = -0.09
+cameras[0].markers[1].distance = 900
+cameras[1].markers[1].distance = 1400
+cameras[2].markers[1].distance = 2382
+cameras[0].markers[2].last_update = time.time()
+cameras[1].markers[2].last_update = time.time()
+cameras[2].markers[2].last_update = time.time()
+cameras[0].markers[2].angle = -0.19
+cameras[1].markers[2].angle = 0.04
+cameras[2].markers[2].angle = 0.07
+cameras[0].markers[2].distance = 1600
+cameras[1].markers[2].distance = 1100
+cameras[2].markers[2].distance = 1582
+cameras[0].markers[3].last_update = time.time()
+cameras[1].markers[3].last_update = time.time()
+cameras[2].markers[3].last_update = time.time()
+cameras[0].markers[3].angle = 0.42
+cameras[1].markers[3].angle = -0.04
+cameras[2].markers[3].angle = -0.48
+cameras[0].markers[3].distance = 2600
+cameras[1].markers[3].distance = 3200
+cameras[2].markers[3].distance = 1382
+
+
+if use_gui:
+	Gui.initGui()
 
 print ""
 print "Listenning port " + str(UDP_PORT) + "..."
@@ -322,6 +454,8 @@ while True:
 			if len(msg) > 0:
 				# send message to robots
 				print "SEND: " + msg
+			if use_gui:
+				Gui.updateGui(now)
 			last_time_update = now
 
 		# let's see if we received any data from cameras
@@ -332,5 +466,6 @@ while True:
 		#cameras[cam_id].debug()
 
 		# listen to any client who wants information
-	except:
+	except Exception as e:
+		#print repr(e)
 		pass
