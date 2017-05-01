@@ -188,9 +188,13 @@ class Gui:
 	def drawTable():
 		Gui.window.fill(Gui.WHITE)
 		pygame.draw.rect(Gui.window, Gui.BLACK, (70, 100, 600, 400), 2)
-		pygame.display.update()
+		for i in range(500, 2000, 500):
+			pygame.draw.line(Gui.window, Gui.BLACK, Gui.realPos2Gui([-1500, i]), Gui.realPos2Gui([1500, i]))
+		for i in range(-1500, 1500, 500):
+			pygame.draw.line(Gui.window, Gui.BLACK, Gui.realPos2Gui([i, 0]), Gui.realPos2Gui([i, 2000]))
 		for cam in cameras:
 			pygame.draw.circle(Gui.window, Gui.BLACK, Gui.realPos2Gui(cam.pos), 15, 2)
+		pygame.display.update()
 
 	@staticmethod
 	def updateGui(curTime):
@@ -313,7 +317,7 @@ class Camera:
                 marker = []
 		for i in range(len(fields) - 1):
 			if i % 4 == 0:
-				marker = self.markers[int(fields[i + 1])]
+				marker = self.markers[int(fields[i + 1]) - 1] # markers[0] has "ID 1"
 			elif i % 4 == 1:
 				marker.angle = float(fields[i + 1])
 			elif i % 4 == 2:
