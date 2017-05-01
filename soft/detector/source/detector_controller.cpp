@@ -6,7 +6,7 @@ DetectorController::DetectorController(Data& data)
 }
 
 void DetectorController::update(void) {
-    if (data.image.id % 50 == 0) {
+    if (data.image.id % 100 == 0) {
         std::cout << "NEXT POS " << data.image.id << std::endl;
     }
 

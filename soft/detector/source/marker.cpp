@@ -172,10 +172,31 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
         pm.dsize = (int)pm.size - (int)previousPos.size;
     }
 
+    // let's verify all areas have similar heights
+    unsigned int minAreaHeight = image.height;
+    unsigned int maxAreaHeight = 0;
+    for (size_t id=0; id<3; ++id) {
+        const unsigned int h = previousAreas[id].height;
+        if (h < minAreaHeight) {
+            minAreaHeight = h;
+        }
+        if (h > maxAreaHeight) {
+            maxAreaHeight = h;
+        }
+    }
+    const unsigned int diffAreaHeight = maxAreaHeight - minAreaHeight;
+    const float ratioAreaHeight = (float) maxAreaHeight / minAreaHeight;
+    if (diffAreaHeight > 10 && ratioAreaHeight > 2.f) {
+        std::cout << "ratio area height too high: " << ratioAreaHeight << std::endl;
+        std::cout << "diff area height too high: " << diffAreaHeight << std::endl;
+        pm.confidence = 0.f;
+        return;
+    }
+
     // make sure each detected area is close from each other
     for (size_t id=1; id<3; ++id) {
         unsigned int distBetweenAreas = absdiff(previousAreas[id-1].maxI, previousAreas[id].minI);
-        if (distBetweenAreas > 20) {
+        if (distBetweenAreas > 10) {
             std::cout << "distBetweenAreas too large: " << distBetweenAreas << std::endl;
             pm.confidence = 0.f;
             return;

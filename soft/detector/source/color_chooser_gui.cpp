@@ -272,4 +272,7 @@ void ColorChooserGUI::update(void) {
             cv::imshow("diagHSV_3", frame);
         }
     }
+
+    if (data.image.id > 130)
+        cv::waitKey(200);
 }
