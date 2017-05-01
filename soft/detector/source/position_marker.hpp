@@ -50,10 +50,10 @@ public:
          * !! This takes into account the reversed picture of the PiCam !!
          * !! Might be needed to be update if lens is moved !!
          * A linear trend gives these coefficients:
-         * f(x) = -0.0015604329 x + 0.4902846562
+         * f(x) = 0.0015604329 x - 0.4902846562
          * R^2 = 0.9999239459 (pretty good!)
          */
-        *angle = -0.0015604329 * x + 0.4902846562;
+        *angle = 0.0015604329 * x - 0.4902846562;
         *distance = 35000.0/size; //magic for now, to be measured later
         return true;
     }
