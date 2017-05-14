@@ -31,8 +31,8 @@ bool Marker::getNextPos(int color_mode, const Image3D& image, PositionMarker &ne
     }
 
     if (isMarkerFound(previousPos)) {
-        unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2;
-        unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2;
+        unsigned int startI = (previousAreas[0].maxI + previousAreas[0].minI)/2 + previousPos.dx;
+        unsigned int startJ = (previousAreas[0].maxJ + previousAreas[0].minJ)/2 + previousPos.dx;
         if (detectFromPoint(image, nextPos, startI, startJ)) {
             previousPos = nextPos;
             return true;
@@ -186,7 +186,8 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
     }
     const unsigned int diffAreaHeight = maxAreaHeight - minAreaHeight;
     const float ratioAreaHeight = (float) maxAreaHeight / minAreaHeight;
-    if (diffAreaHeight > 10 && ratioAreaHeight > 2.f) {
+    //if (diffAreaHeight > 10 && ratioAreaHeight > 2.f) {
+    if (diffAreaHeight > 15 && ratioAreaHeight > 4.f) { //// [[ new video format !! ]]
         std::cout << "ratio area height too high: " << ratioAreaHeight << std::endl;
         std::cout << "diff area height too high: " << diffAreaHeight << std::endl;
         pm.confidence = 0.f;
@@ -195,30 +196,26 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
 
     // make sure each detected area is close from each other
     for (size_t id=1; id<3; ++id) {
-        unsigned int distBetweenAreas = absdiff(previousAreas[id-1].maxI, previousAreas[id].minI);
-        if (distBetweenAreas > 10) {
+        int distBetweenAreas = previousAreas[id-1].maxI - previousAreas[id].minI;
+        if (distBetweenAreas < -3) { // allow for small overlap
+            std::cout << "distBetweenAreas negative!! : " << distBetweenAreas << std::endl;
+            pm.confidence = 0.f;
+            return;
+        }
+        //if (distBetweenAreas > 10) {
+        if (distBetweenAreas > 15) {
             std::cout << "distBetweenAreas too large: " << distBetweenAreas << std::endl;
             pm.confidence = 0.f;
             return;
         }
     }
 
-    // compute difference with the mean
-    unsigned int distMinJ = 0;
-    for (size_t id=0; id<3; ++id) {
-        distMinJ += absdiff(meanMinJ, previousAreas[id].minJ);
-    }
-    unsigned int distMaxJ = 0;
-    for (size_t id=0; id<3; ++id) {
-        distMaxJ += absdiff(meanMaxJ, previousAreas[id].maxJ);
-    }
-
-    // width cannot be greater than height
+    // width cannot be greater than height   [[[ new video format !! ]]]
     // width could be a bit smaller than height if not fully seen
     unsigned int width = meanMaxJ - meanMinJ;
-    float ratio = (float) pm.size / width;
-    if (ratio < 0.7f || ratio > 3.f) {
-        std::cout << "ratio not good: " << ratio << std::endl;
+    float ratio_height_width = (float) pm.size / width;
+    if (ratio_height_width < 0.7f || ratio_height_width > 6.f) {
+        std::cout << "ratio not good: " << ratio_height_width << std::endl;
         pm.confidence = 0.f;
         return;
     }
@@ -231,16 +228,29 @@ void Marker::ratePositionMarker(const Image3D& image, PositionMarker& pm) {
     } else {
         distFromMiddle = absdiff(imageMiddleHeight, pm.minI);
     }
-    if (distFromMiddle > 30) {
+    if (distFromMiddle > 100) { //// [[[ new video format !! ]]]
         std::cout << "distFromMiddle too large: " << distFromMiddle << std::endl;
         pm.confidence = 0.f;
         return;
+    }
+
+    // compute difference with the mean
+    unsigned int distMinJ = 0;
+    for (size_t id=0; id<3; ++id) {
+        distMinJ += absdiff(meanMinJ, previousAreas[id].minJ);
+    }
+    unsigned int distMaxJ = 0;
+    for (size_t id=0; id<3; ++id) {
+        distMaxJ += absdiff(meanMaxJ, previousAreas[id].maxJ);
     }
 
     float confidence_distJ = 0.5f * (float) (distMinJ + distMaxJ) / (float) pm.size;
     std::cout << "OK :) conf_distJ=" << confidence_distJ << std::endl;
     //std::cout << "conf_diffWidthHeight=" << confidence_diffWidthHeight << std::endl;
     pm.confidence = 1.f - confidence_distJ;
+    previousAreas[0].display();
+    previousAreas[1].display();
+    previousAreas[2].display();
 }
 
 bool Marker::isMarkerFound(const PositionMarker& pm) {

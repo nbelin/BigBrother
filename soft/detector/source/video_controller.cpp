@@ -24,6 +24,9 @@ VideoController::VideoController(Data& data)
         exit(-1);
     }
 
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1*640);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 2*480);
+
     cap >> data.frame;
 
     // This first (dummy) image is used to initialize buffers in Classes

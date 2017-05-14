@@ -72,7 +72,7 @@ void Rectangle::expandArea(int color_mode, const Image3D& image, Image& mask, Ar
 
 void Rectangle::rateArea(Area& area) {
     // first, minimal check on area width
-    if (area.width < MIN_AREA_WIDTH || area.width > MAX_AREA_WIDTH) {
+    if (area.height < MIN_AREA_HEIGHT || area.width < MIN_AREA_WIDTH || area.width > MAX_AREA_WIDTH) {
         area.rank = 0;
         return;
     }
@@ -82,7 +82,7 @@ void Rectangle::rateArea(Area& area) {
      *          8 cm
      * +----------------------+
      * |   @@@@@@@@@@@@@@@@@  |
-     * |  @@@@@@@@@@@@@@@@@@  |  2.5 cm
+     * |  @@@@@@@@@@@@@@@@@@  |  2.5 cm    [ !! consider 5 cm for new video format !! ]
      * |    @@@@@@@@@@@@@@    |
      * +----------------------+
      *
@@ -93,8 +93,9 @@ void Rectangle::rateArea(Area& area) {
      *  - the width is at most 8 times the height
      * Further checks will be done at higher level
      */
-    unsigned int ratio = area.width / area.height;
-    if (ratio < 1 || ratio > 7) {
+    float ratio = area.width / area.height;
+    //if (ratio < 1 || ratio > 7) {
+    if (ratio < 0.8 || ratio > 4) {
         area.rank = 0;
         //std::cout << ratio << std::endl;
         //std::cout << area.width << " / " << area.height << std::endl;
