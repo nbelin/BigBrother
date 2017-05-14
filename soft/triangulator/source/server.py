@@ -203,13 +203,13 @@ class Gui:
 		Gui.window.blit(Gui.timetext, (50, 20))
 		for cam in cameras:
 			for mark in cam.markers:
-				color = Gui.colorFromId(mark.id)
 				thickness = 2
 				difTime = curTime - mark.last_update
 				if difTime > 2:
 					continue
 				elif difTime > 1:
 					thickness = 1
+				color = Gui.colorFromId(mark.id)
 				start_line = Gui.realPos2Gui(cam.pos)
 				end_line = Gui.realPos2Gui(cam.pos + 2*mark.distance*anglesToVector(mark.angle, cam.angle))
 				approx_point = Gui.realPos2Gui(cam.pos + mark.distance*anglesToVector(mark.angle, cam.angle))
@@ -346,6 +346,8 @@ UDP_PORT_START_LISTEN = 0
 UDP_ADDR_START_LISTEN = ""
 UDP_PORT_START_WRITE = 0
 UDP_ADDR_START_WRITE = ""
+UDP_PORT_ROBOT_CAST = 0
+UDP_ADDR_ROBOT_CAST = ""
 cameras = []
 robots = []
 last_time_update = 0
@@ -376,6 +378,10 @@ try:
 			UDP_PORT_START_WRITE = int(value)
 		elif token == "UDP_ADDR_START_WRITE":
 			UDP_ADDR_START_WRITE = value
+		elif token == "UDP_PORT_ROBOT_CAST":
+			UDP_PORT_ROBOT_CAST = int(value)
+		elif token == "UDP_ADDR_ROBOT_CAST":
+			UDP_ADDR_ROBOT_CAST = value
 		elif token.startswith("POSITION_"):
 			pos_id = int(token.replace("POSITION_", ""))
 			if pos_id < 0 or pos_id > 2:
@@ -388,6 +394,8 @@ try:
 			raise SyntaxError("Unrecognized token:" + token)
 	if UDP_PORT == 0:
 		raise SyntaxError("UDP_PORT has not been defined")
+	if UDP_PORT_ROBOT_CAST == 0:
+		raise SyntaxError("UDP_PORT_ROBOT_CAST has not been defined")
 	if wait_game and UDP_PORT_START_LISTEN == 0:
 		raise SyntaxError("UDP_PORT_START_LISTEN has not been defined (-w has been used)")
 	if wait_game and UDP_PORT_START_WRITE == 0:
@@ -400,8 +408,8 @@ config_file.close()
 # init robots
 for i in range(4):
 	robots.append(Robot(i+1))
-	for cam in range(3):
-		robots[i].addCamera(cameras[cam])
+	for cam in cameras:
+		robots[i].addCamera(cam)
 
 # print configuration
 for rob in robots:
@@ -412,13 +420,15 @@ for cam in cameras:
 if len(cameras) != 3:
 	sys.exit("3 cameras must be defined")
 
-# prepare socket
+# prepare sockets
 sock_cameras = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock_cameras.bind(("", UDP_PORT))
 sock_cameras.settimeout(0)
+# (multi cast)
+sock_robots = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) 
+sock_robots.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-
-# real game condition
+# real game condition (wait for game to start)
 if wait_game:
 	# UDP
 	sock_start_listen = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -472,6 +482,10 @@ while True:
 			if len(msg) > 0:
 				# send message to robots
 				print "SEND: " + msg
+				try:
+					sock_robots.sendto(msg, (UDP_ADDR_ROBOT_CAST, UDP_PORT_ROBOT_CAST))
+				except Exception as e:
+					print repr(e)
 			if use_gui:
 				Gui.updateGui(now)
 			last_time_update = now
