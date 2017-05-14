@@ -342,11 +342,18 @@ class Camera:
 # global var config
 config_file_name = "../config/config.txt"
 UDP_PORT = 0
+UDP_PORT_START_LISTEN = 0
+UDP_ADDR_START_LISTEN = ""
+UDP_PORT_START_WRITE = 0
+UDP_ADDR_START_WRITE = ""
 cameras = []
 robots = []
 last_time_update = 0
+wait_game = False
 use_gui = False
 for arg in sys.argv:
+	if arg == "-w":
+		wait_game = True
 	if arg == "-g":
 		use_gui = True
 
@@ -357,9 +364,18 @@ try:
 	for line in config_file:
 		if line.startswith("#") or line == "\n":
 			continue
+		line = line.rstrip('\n')
 		token, value = line.split("=")
 		if token == "UDP_PORT":
 			UDP_PORT = int(value)
+		elif token == "UDP_PORT_START_LISTEN":
+			UDP_PORT_START_LISTEN = int(value)
+		elif token == "UDP_ADDR_START_LISTEN":
+			UDP_ADDR_START_LISTEN = value
+		elif token == "UDP_PORT_START_WRITE":
+			UDP_PORT_START_WRITE = int(value)
+		elif token == "UDP_ADDR_START_WRITE":
+			UDP_ADDR_START_WRITE = value
 		elif token.startswith("POSITION_"):
 			pos_id = int(token.replace("POSITION_", ""))
 			if pos_id < 0 or pos_id > 2:
@@ -372,6 +388,10 @@ try:
 			raise SyntaxError("Unrecognized token:" + token)
 	if UDP_PORT == 0:
 		raise SyntaxError("UDP_PORT has not been defined")
+	if wait_game and UDP_PORT_START_LISTEN == 0:
+		raise SyntaxError("UDP_PORT_START_LISTEN has not been defined (-w has been used)")
+	if wait_game and UDP_PORT_START_WRITE == 0:
+		raise SyntaxError("UDP_PORT_START_WRITE has not been defined (-w has been used)")
 except Exception as e:
 	print repr(e)
 	sys.exit("Error reading config file " + config_file_name)
@@ -397,7 +417,39 @@ sock_cameras = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
 sock_cameras.bind(("", UDP_PORT))
 sock_cameras.settimeout(0)
 
-# last info received from cameras
+
+# real game condition
+if wait_game:
+	# UDP
+	sock_start_listen = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	sock_start_listen.bind((UDP_ADDR_START_LISTEN, UDP_PORT_START_LISTEN))
+	sock_start_listen.settimeout(60)
+	# UDP MULTICAST
+	sock_start_write = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) 
+	sock_start_write.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+	arg_markers = ""
+
+	print "Waiting for game to start... (port " + str(UDP_PORT_START_LISTEN) + ")"
+	while True:
+		try:
+			#arg_markers = "123"  # uncomment to test if no robot is up
+			#break
+			data = sock_start_listen.recv(1024)
+			if data.startswith("GO "):
+				arg_markers = data.split(" ")[1]
+				break
+		except Exception as e:
+			print repr(e)
+	
+	print "arg_markers: ", arg_markers
+	for i in range(4):
+		try:
+			print "send: GO " + arg_markers + " to " + UDP_ADDR_START_WRITE + ":" + str(UDP_PORT_START_WRITE) + "..."
+			sock_start_write.sendto("GO " + arg_markers, (UDP_ADDR_START_WRITE, UDP_PORT_START_WRITE))
+		except Exception as e:
+			print repr(e)
+		time.sleep(0.2)
 
 
 if use_gui:
@@ -426,7 +478,7 @@ while True:
 
 		# let's see if we received any data from cameras
 		for i in range(len(cameras)):
-			data, addr = sock_cameras.recvfrom(1024)
+			data = sock_cameras.recv(1024)
 			cam_id = int(data[0])
 			cameras[cam_id].update(data, now)
 		#cameras[cam_id].debug()
