@@ -14,11 +14,11 @@ int LUV_mr = 20;
 /*
  * HSV
  */
-Color HSV_g_min(40, 40, 50);
-Color HSV_g_max(70, 255, 255);
+Color HSV_g_min(25, 50, 50);
+Color HSV_g_max(35, 255, 255);
 Color HSV_b_min(95, 40, 50);
 Color HSV_b_max(120, 255, 255);
-Color HSV_m_min(148, 40, 50);
+Color HSV_m_min(148, 80, 100);
 Color HSV_m_max(172, 255, 255);
 
 
