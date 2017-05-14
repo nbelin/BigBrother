@@ -76,7 +76,8 @@ except Exception as e:
 # delay a shutdown, let the code continue even if the command fails
 try:
 	print "run: sleep 110 && sudo shutdown -h now &"
-	subprocess.call("sleep 110 && sudo shutdown -h now &")
+	subprocess.call("sleep 110 && sudo shutdown -h now &", shell=True)
+	print "!! The system will shutdown in 110 seconds, kill the sleep process to abort the shutdown !!"
 except Exception as e:
 	print repr(e)
 
