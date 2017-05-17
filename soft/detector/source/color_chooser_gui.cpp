@@ -228,17 +228,17 @@ void ColorChooserGUI::update(void) {
         return;
     }
 
-    cv::imshow("frameToClick", data.frame);
+    cv::imshow("frameToClick", *data.frame);
     //cv::imshow("data.hsv", data.hsv);
     if ( couleur >= 1 ) {
         if (data.color_choice & Color::LUV) {
-            frame = show_color_LUV(data.frame, data.luv, 0, radius_1, lthreshold_1);
+            frame = show_color_LUV(*data.frame, data.luv, 0, radius_1, lthreshold_1);
             cv::imshow("frameLUV_1", frame);
             frame = show_diagram_LUV(0, radius_1, lthreshold_1);
             cv::imshow("diagLUV_1", frame);
         }
         if (data.color_choice & Color::HSV) {
-            frame = show_color_HSV(data.frame, data.hsv, 0, h_accept_1, s_min_1, v_min_1);
+            frame = show_color_HSV(*data.frame, data.hsv, 0, h_accept_1, s_min_1, v_min_1);
             cv::imshow("frameHSV_1", frame);
             frame = show_diagram_HSV(0, h_accept_1, s_min_1);
             cv::imshow("diagHSV_1", frame);
@@ -246,13 +246,13 @@ void ColorChooserGUI::update(void) {
     }
     if ( couleur >= 2 ) {
         if (data.color_choice & Color::LUV) {
-            frame = show_color_LUV(data.frame, data.luv, 1, radius_2, lthreshold_2);
+            frame = show_color_LUV(*data.frame, data.luv, 1, radius_2, lthreshold_2);
             cv::imshow("frameLUV_2", frame);
             frame = show_diagram_LUV(1, radius_2, lthreshold_2);
             cv::imshow("diagLUV_2", frame);
         }
         if (data.color_choice & Color::HSV) {
-            frame = show_color_HSV(data.frame, data.hsv, 1, h_accept_2, s_min_2, v_min_2);
+            frame = show_color_HSV(*data.frame, data.hsv, 1, h_accept_2, s_min_2, v_min_2);
             cv::imshow("frameHSV_2", frame);
             frame = show_diagram_HSV(1, h_accept_2, s_min_2);
             cv::imshow("diagHSV_2", frame);
@@ -260,19 +260,19 @@ void ColorChooserGUI::update(void) {
     }
     if ( couleur >= 3 ) {
         if (data.color_choice & Color::LUV) {
-            frame = show_color_LUV(data.frame, data.luv, 2, radius_3, lthreshold_3);
+            frame = show_color_LUV(*data.frame, data.luv, 2, radius_3, lthreshold_3);
             cv::imshow("frameLUV_3", frame);
             frame = show_diagram_LUV(2, radius_3, lthreshold_3);
             cv::imshow("diagLUV_3", frame);
         }
         if (data.color_choice & Color::HSV) {
-            frame = show_color_HSV(data.frame, data.hsv, 2, h_accept_3, s_min_3, v_min_3);
+            frame = show_color_HSV(*data.frame, data.hsv, 2, h_accept_3, s_min_3, v_min_3);
             cv::imshow("frameHSV_3", frame);
             frame = show_diagram_HSV(2, h_accept_3, s_min_3);
             cv::imshow("diagHSV_3", frame);
         }
     }
 
-    if (data.image.id > 130)
-        cv::waitKey(200);
+    if (data.image.id > 210)
+        cv::waitKey(300);
 }

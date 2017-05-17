@@ -17,6 +17,7 @@ public:
         threads.resize(4);
         src_mats.resize(4);
         dst_mats.resize(4);
+        data.hsv = data.frame->clone();
     }
 
     void update(void) {
@@ -24,12 +25,11 @@ public:
             return;
         }
         //cv::cvtColor(data.frame, data.hsv, CV_BGR2HSV);
-        data.hsv = data.frame.clone();
         for (size_t i=0; i<threads.size(); ++i) {
-            unsigned int height = data.frame.rows / 4;
+            unsigned int height = data.frame->rows / 4;
             unsigned int row = height * i;
-            cv::Rect rect = cv::Rect(0, row, data.frame.cols, height);
-            src_mats[i] = data.frame(rect);
+            cv::Rect rect = cv::Rect(0, row, data.frame->cols, height);
+            src_mats[i] = (*data.frame)(rect);
             dst_mats[i] = data.hsv(rect);
             threads[i] = std::thread(jobCvtColor, &src_mats[i], &dst_mats[i]);
         }

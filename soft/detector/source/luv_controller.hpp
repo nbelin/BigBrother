@@ -15,7 +15,7 @@ public:
         if ((data.color_choice & Color::LUV) == 0) {
             return;
         }
-        cv::cvtColor(data.frame, data.luv, CV_BGR2Luv);
+        cv::cvtColor(*data.frame, data.luv, CV_BGR2Luv);
         assert(data.luv.data != nullptr);
         data.image.setData(data.luv.data);
     }

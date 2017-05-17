@@ -11,7 +11,7 @@
 
 
 struct Data {
-    cv::Mat frame;
+    cv::Mat * frame;
     cv::Mat luv;
     cv::Mat hsv;
     Image3D image = {0,0,NULL};
