@@ -16,6 +16,11 @@ import struct
 config_file_name = "../config/config_wrapper.txt"
 UDP_PORT = 0
 UDP_ADDR = ""
+no_wait = False
+for arg in sys.argv:
+        if arg == "-nowait":
+                no_wait = True
+
 
 # parse configuration
 try:
@@ -53,7 +58,7 @@ arg_marker = ""
 # wait for game to start
 print ""
 print "Listenning port " + str(UDP_PORT) + "..."
-while True:
+while not no_wait:
 	try:
 		print "nb_retry: ", nb_retry
 		data = sock_triang.recv(1024)
