@@ -27,7 +27,8 @@ private:
     std::vector<cv::Mat> workingMats;
     int lastMatId;
     int readyMatId;
-    static const int NBWORKMATS = 8;
+    static const int NBWORKMATS = 12;
+    bool captureDefaultCam;
 public:
     VideoController(Data& data);
 

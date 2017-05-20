@@ -5,6 +5,7 @@
 cv::VideoCapture VideoController::open_cam(std::string filename) {
     if(filename.size() > 0) {
         std::cout << "Opening file : " << filename << std::endl;
+        captureDefaultCam = false;
         return cv::VideoCapture(filename.c_str());
     }
     else {
@@ -19,6 +20,7 @@ VideoController::VideoController(Data& data)
     lastMatId = 0;
     readyMatId = 0;
     workingMats.resize(NBWORKMATS);
+    captureDefaultCam = true;
 
     data.frame = & workingMats[NBWORKMATS - 1];
 
@@ -53,9 +55,12 @@ VideoController::VideoController(Data& data)
     resize(*data.frame, *data.frame, cv::Size(640, 2*480));
     std::cout << "(" << data.frame->cols << ", " << data.frame->rows << ")" << std::endl;
 
-    thread = std::thread(&VideoController::jobGetImage, this);
-    lastMatId = NBWORKMATS - 1;
-    readyMatId = NBWORKMATS - 1;
+    if (captureDefaultCam) {
+        // if we are reading a file, don't read the frames in a separate thread (far too fast!)
+        thread = std::thread(&VideoController::jobGetImage, this);
+        lastMatId = NBWORKMATS - 1;
+        readyMatId = NBWORKMATS - 1;
+    }
 
     // This first (dummy) image is used to initialize buffers in Classes
     data.image = Image3D(data.frame->cols, data.frame->rows, NULL);
@@ -82,31 +87,43 @@ VideoController::VideoController(Data& data)
 }
 
 void VideoController::update(void) {
-    while (lastMatId == readyMatId) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-    }
+    if (captureDefaultCam) {
+        while (lastMatId == readyMatId) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
 
-    data.frame = & workingMats[readyMatId];
-    lastMatId = readyMatId;
+        data.frame = & workingMats[readyMatId];
+        lastMatId = readyMatId;
 
-    if (data.frame->empty()) {
-        std::cout << "Video ends" << std::endl;
-        exit(0);
-    }
-    if (writer.isOpened()) {
- //       writer << *data.frame;
+    } else {
+        // if we are reading a file, don't read the frames in a separate thread (far too fast!)
+        cap >> * data.frame;
+
+        if (data.frame->empty()) {
+            std::cout << "Video ends" << std::endl;
+            exit(0);
+        }
+
+        resize(* data.frame, * data.frame, cv::Size(640, 2*480));
     }
 }
 
 void VideoController::jobGetImage() {
     while (true) {
         for (size_t i=0; i<NBWORKMATS; ++i) {
+
 #ifdef RASPICAM
             raspicap.grab();
             raspicap.retrieve(workingMats[i]);
 #else
             cap >> workingMats[i];
 #endif
+
+            if (workingMats[i].empty()) {
+                std::cout << "Video ends" << std::endl;
+                exit(0);
+            }
+
             resize(workingMats[i], workingMats[i], cv::Size(640, 2*480));
             readyMatId = i;
         }
