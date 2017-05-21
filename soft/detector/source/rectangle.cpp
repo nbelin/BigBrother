@@ -15,7 +15,7 @@ void Rectangle::expandArea(int color_mode, const Image3D& image, Image& mask, Ar
     //direction is : LEFT, RIGHT, UP, DOWN
     static const int DIRI[] = {-1,  1,  0,  0};
     static const int DIRJ[] = { 0,  0, -1,  1};
-    static const Color MAXDIFFCOLOR = Color(0, 0, 0);
+    static const Color MAXDIFFCOLOR = Color(1, 3, 5);
 
     if (isPixelRightColor(color_mode, image, i, j) == false) {
         area.size = 0;
