@@ -52,7 +52,7 @@ void Communication::sendMessage()
     if (sendMessage) {
         buffer[BUFFLEN-1] = '\0';
         //send the message
-        std::cout << "SEND: " << buffer << std::endl;
+        std::cout << "SEND (id=" << data.image.id << "): " << buffer << "\n";
         if (sendto(socketId, buffer, strlen(buffer) , 0 , (struct sockaddr *) &socketAddr, sizeof(socketAddr)) == -1) {
             fprintf(stderr, "Communication::sendMessage sendTo() failed\n");
         }

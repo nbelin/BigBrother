@@ -14,9 +14,9 @@ public:
     int dx;
     int dsize;
     void display() {
-        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << std::endl;
-        std::cout << "minI=" << minI << " \tmaxI=" << maxI << std::endl;
-        std::cout << "confidence=" << confidence << " \tdx=" << dx << " \tdsize=" << dsize << std::endl;
+        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << "\n";
+        std::cout << "minI=" << minI << " \tmaxI=" << maxI << "\n";
+        std::cout << "confidence=" << confidence << " \tdx=" << dx << " \tdsize=" << dsize << "\n";
     }
     void reset() {
         imageID = 0;

@@ -15,7 +15,7 @@ void Rectangle::expandArea(int color_mode, const Image3D& image, Image& mask, Ar
     //direction is : LEFT, RIGHT, UP, DOWN
     static const int DIRI[] = {-1,  1,  0,  0};
     static const int DIRJ[] = { 0,  0, -1,  1};
-    static const Color MAXDIFFCOLOR = Color(4, 4, 4);
+    static const Color MAXDIFFCOLOR = Color(0, 0, 0);
 
     if (isPixelRightColor(color_mode, image, i, j) == false) {
         area.size = 0;
@@ -97,8 +97,8 @@ void Rectangle::rateArea(Area& area) {
     //if (ratio < 1 || ratio > 7) {
     if (ratio < 0.8 || ratio > 4) {
         area.rank = 0;
-        //std::cout << ratio << std::endl;
-        //std::cout << area.width << " / " << area.height << std::endl;
+        //std::cout << ratio << "\n";
+        //std::cout << area.width << " / " << area.height << "\n";
         return;
     }
 

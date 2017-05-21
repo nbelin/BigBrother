@@ -17,9 +17,9 @@ public:
         j >= minJ && j <= maxJ);
   }
   void display() {
-      std::cout << "(" << minI << ", " << minJ << ") \t -> (" << maxI << ", " << maxJ << ")" << std::endl;
-      std::cout << "size=" << size << " \tw=" << width << " \th=" << height << std::endl;
-      std::cout << "count=" << count << " \trank=" << rank << std::endl;
+      std::cout << "(" << minI << ", " << minJ << ") \t -> (" << maxI << ", " << maxJ << ")\n";
+      std::cout << "size=" << size << " \tw=" << width << " \th=" << height << "\n";
+      std::cout << "count=" << count << " \trank=" << rank << "\n";
   }
 };
 

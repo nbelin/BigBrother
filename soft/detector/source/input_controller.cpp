@@ -84,14 +84,14 @@ InputController::InputController(Data& data, int argc, char* argv[])
 
 void InputController::show_help_and_exit(const char * errMsg) {
     if (errMsg != nullptr) {
-        std::cout << errMsg << std::endl << std::endl;
+        std::cout << errMsg << "\n\n";
     }
-    std::cout << "-i=<input_video_filename>" << std::endl;
-    std::cout << "-o=<output_video_filename>" << std::endl;
-    std::cout << "-r=<result_filename>" << std::endl;
-    std::cout << "-m=[1|2|3|4] (list of markers to detect, default: 1)" << std::endl;
-    std::cout << "-g=[0|1|2] (level of gui, default: 0)" << std::endl;
-    std::cout << "-hsv | -luv (by default, hsv used)" << std::endl;
+    std::cout << "-i=<input_video_filename>\n";
+    std::cout << "-o=<output_video_filename>\n";
+    std::cout << "-r=<result_filename>\n";
+    std::cout << "-m=[1|2|3|4] (list of markers to detect, default: 1)\n";
+    std::cout << "-g=[0|1|2] (level of gui, default: 0)\n";
+    std::cout << "-hsv | -luv (by default, hsv used)\n";
     exit(-1);
 }
 

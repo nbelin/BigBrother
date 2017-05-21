@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     data.color_choice = Color::HSV;
 
     /*
-    std::cout << "CONFIG" << std::endl;
+    std::cout << "CONFIG\n";
     cereal::JSONOutputArchive ar(std::cout);
     ar(CEREAL_NVP(config));
     std::cout << std::endl;
@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     Communication comm(data);
     ColorChooserGUI ccgui(data);
 
-    std::cout << "start loop" << std::endl;
+    std::cout << "start loop\n";
     while(1) {
         input.update();
         video.update(); // get a new frame from camera

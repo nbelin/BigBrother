@@ -33,7 +33,7 @@ void GUI::update(void) {
 
     // add middle acceptance lines:
     int middleI = data.image.height / 2;
-    int accept = 30;
+    int accept = 40;
     cv::line(*data.frame, cv::Point(0, middleI - accept), cv::Point(data.image.width-1, middleI - accept), cv::Scalar(0, 0, 0));
     cv::line(*data.frame, cv::Point(0, middleI + accept), cv::Point(data.image.width-1, middleI + accept), cv::Scalar(0, 0, 0));
 

@@ -4,12 +4,12 @@
 
 cv::VideoCapture VideoController::open_cam(std::string filename) {
     if(filename.size() > 0) {
-        std::cout << "Opening file : " << filename << std::endl;
+        std::cout << "Opening file : " << filename << "\n";
         captureDefaultCam = false;
         return cv::VideoCapture(filename.c_str());
     }
     else {
-        std::cout << "Opening default camera" << std::endl;
+        std::cout << "Opening default camera\n";
         return cv::VideoCapture(0); // open the default camera
     }
 }
@@ -30,7 +30,7 @@ VideoController::VideoController(Data& data)
 //    raspicap.set(CV_CAP_PROP_FRAME_HEIGHT, 1232);
 
     if(!raspicap.open()) {
-        std::cout << "Failed to open video (raspicam)" << std::endl;
+        std::cout << "Failed to open video (raspicam)\n";
         exit(-1);
     }
 
@@ -40,8 +40,8 @@ VideoController::VideoController(Data& data)
     cap = open_cam(data.input_video_filename);
 
     if(!cap.isOpened()) {
-        std::cout << "Failed to open video" << std::endl;
-        std::cout << "On Rasp, try 'sudo modprobe bcm2835-v4l2' to enable PICam" << std::endl;
+        std::cout << "Failed to open video\n";
+        std::cout << "On Rasp, try 'sudo modprobe bcm2835-v4l2' to enable PICam\n";
         exit(-1);
     }
 
@@ -53,7 +53,7 @@ VideoController::VideoController(Data& data)
     cap >> * data.frame;
 #endif
     resize(*data.frame, *data.frame, cv::Size(640, 2*480));
-    std::cout << "(" << data.frame->cols << ", " << data.frame->rows << ")" << std::endl;
+    std::cout << "(" << data.frame->cols << ", " << data.frame->rows << ")\n";
 
     if (captureDefaultCam) {
         // if we are reading a file, don't read the frames in a separate thread (far too fast!)
@@ -72,12 +72,12 @@ VideoController::VideoController(Data& data)
 
     // Init VideoWriter to save the camera video to allow playback
     if (data.output_video_filename.size() > 0) {
-        std::cout << "Opening (output) file : " << data.output_video_filename << std::endl;
+        std::cout << "Opening (output) file : " << data.output_video_filename << "\n";
         //writer.open(data.output_video_filename, CV_FOURCC('M','P','E','G'), 30, data.frame->size());
         writer.open(data.output_video_filename, CV_FOURCC('M','J', 'P','G'), 30, data.frame->size());
 
         if(!writer.isOpened()) {
-            std::cout << "Failed to open video" << std::endl;
+            std::cout << "Failed to open video\n";
             exit(-1);
         }
 
@@ -89,7 +89,7 @@ VideoController::VideoController(Data& data)
 void VideoController::update(void) {
     if (captureDefaultCam) {
         while (lastMatId == readyMatId) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
 
         data.frame = & workingMats[readyMatId];
@@ -100,7 +100,7 @@ void VideoController::update(void) {
         cap >> * data.frame;
 
         if (data.frame->empty()) {
-            std::cout << "Video ends" << std::endl;
+            std::cout << "Video ends\n";
             exit(0);
         }
 
@@ -120,7 +120,7 @@ void VideoController::jobGetImage() {
 #endif
 
             if (workingMats[i].empty()) {
-                std::cout << "Video ends" << std::endl;
+                std::cout << "Video ends\n";
                 exit(0);
             }
 
@@ -135,7 +135,7 @@ void VideoController::jobSaveImage() {
     while (true) {
     
         while (last_saved == readyMatId) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
 
         last_saved = readyMatId;
