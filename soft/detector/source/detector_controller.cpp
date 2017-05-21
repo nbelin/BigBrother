@@ -7,7 +7,7 @@ DetectorController::DetectorController(Data& data)
 
 void DetectorController::update(void) {
     if (data.image.id % 100 == 0) {
-        std::cout << "NEXT POS " << data.image.id << "\n";
+        std::cout << "NEXT POS " << data.image.id << std::endl; // this endl force flush from time to time
     }
 
     for (size_t i=0; i<data.marker.size(); ++i) {

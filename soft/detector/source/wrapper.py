@@ -106,13 +106,20 @@ while True:
 	break
 
 # run main process
-command_line_template = "../build/detector -m=" + arg_marker
+command_line_template = "../build/detector"
 print "cmd_line_template: ", command_line_template
 for i in range(20):
 	arg_output = output_dir + "video" + str(i) + ".avi"
-	command_line = command_line_template + " -o=" + arg_output
+	stdout_str = output_dir + "out" + str(i) + ".txt"
+	stderr_str = output_dir + "err" + str(i) + ".txt"
+	command_line = [command_line_template, "-m=" + arg_marker, "-o=" + arg_output]
 	print "run: ", command_line
-	ret = subprocess.call(command_line, shell=True)
+	print "stdout: ", stdout_str
+	print "stderr: ", stderr_str
+	ret = 123
+        with open(stdout_str, "w") as stdout_file:
+        	with open(stderr_str, "w") as stderr_file:
+			ret = subprocess.call(command_line, stdout=stdout_file, stderr=stderr_file)
 	print "returned: ", ret
 	if ret == 0:
 		break

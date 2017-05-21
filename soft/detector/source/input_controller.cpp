@@ -14,6 +14,7 @@ InputController::InputController(Data& data, int argc, char* argv[])
                     show_help_and_exit("-i arg already present");
                 }
                 data.input_video_filename = &argv[i][3];
+                std::cout << "input video: " << data.input_video_filename << "\n";
                 break;
 
             case 'o':
@@ -21,13 +22,14 @@ InputController::InputController(Data& data, int argc, char* argv[])
                     show_help_and_exit("-o arg already present");
                 }
                 data.output_video_filename = &argv[i][3];
+                std::cout << "output video: " << data.output_video_filename << "\n";
                 break;
 
             case 'r':
                 if (data.result_filename.size() > 0) {
                     show_help_and_exit("-r arg already present");
                 }
-                std::cout << "Not yet implemented" << std::endl;
+                std::cout << "Not yet implemented\n";
                 data.result_filename = &argv[i][3];
                 break;
 
@@ -44,6 +46,7 @@ InputController::InputController(Data& data, int argc, char* argv[])
                     if (c < '1' || c > '4') {
                         show_help_and_exit("invalid marker id");
                     }
+                    std::cout << "detect marker: " << c << "\n";
                     data.pm.push_back(PositionMarker(c-'0'));
                 }
                 if (mid == 4 && argv[i][3+mid] != '\0') {
