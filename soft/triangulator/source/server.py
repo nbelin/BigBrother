@@ -313,7 +313,7 @@ class Camera:
 		if self.id != int(fields[0]):
 			print "ERROR camera id " + fields[0] + " != " + str(self.id)
 			return
-		print "camera_id: " + str(self.id)
+		print "camera_id: " + str(self.id) + " >> " + msg
                 marker = []
 		for i in range(len(fields) - 1):
 			if i % 4 == 0:
