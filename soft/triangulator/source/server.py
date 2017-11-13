@@ -313,7 +313,7 @@ class Camera:
 		if self.id != int(fields[0]):
 			print "ERROR camera id " + fields[0] + " != " + str(self.id)
 			return
-		print "camera_id: " + str(self.id) + " >> " + msg
+		print "[" + str(curTime) + "] camera_id: " + str(self.id) + " >> " + msg
                 marker = []
 		for i in range(len(fields) - 1):
 			if i % 4 == 0:
@@ -348,6 +348,8 @@ UDP_PORT_START_WRITE = 0
 UDP_ADDR_START_WRITE = ""
 UDP_PORT_ROBOT_CAST = 0
 UDP_ADDR_ROBOT_CAST = ""
+UDP_PORT_ROBOT_UNICAST = 0
+UDP_ADDR_ROBOT_UNICAST = range(3)
 cameras = []
 robots = []
 last_time_update = 0
@@ -382,6 +384,8 @@ try:
 			UDP_PORT_ROBOT_CAST = int(value)
 		elif token == "UDP_ADDR_ROBOT_CAST":
 			UDP_ADDR_ROBOT_CAST = value
+		elif token == "UDP_PORT_ROBOT_UNICAST":
+			UDP_PORT_ROBOT_UNICAST = int(value)
 		elif token.startswith("POSITION_"):
 			pos_id = int(token.replace("POSITION_", ""))
 			if pos_id < 0 or pos_id > 2:
@@ -390,6 +394,9 @@ try:
 			if len(coords) != 3:
 				raise SyntaxError("Invalid position value: " + value)
 			cameras.append(Camera(pos_id, coords[0:2], coords[2]))
+		elif token.startswith("UDP_ADDR_ROBOT_UNICAST_"):
+			rob_id = int(token.replace("UDP_ADDR_ROBOT_UNICAST_", ""))
+			UDP_ADDR_ROBOT_UNICAST[rob_id] = value
 		else:
 			raise SyntaxError("Unrecognized token:" + token)
 	if UDP_PORT == 0:
@@ -434,14 +441,20 @@ if wait_game:
 	sock_start_listen = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	sock_start_listen.bind((UDP_ADDR_START_LISTEN, UDP_PORT_START_LISTEN))
 	sock_start_listen.settimeout(60)
-	# UDP MULTICAST
-	sock_start_write = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) 
-	sock_start_write.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-	arg_markers = ""
+	sock_start_write = []
+	if UDP_PORT_ROBOT_UNICAST == 0:
+		# UDP MULTICAST
+		sock_start_write = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) 
+		sock_start_write.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	else:
+		sock_start_write = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+	arg_markers = "1234"
 
 	print "Waiting for game to start... (port " + str(UDP_PORT_START_LISTEN) + ")"
-	while True:
+	sys.stdout.flush()
+	while False:
 		try:
 			#arg_markers = "123"  # uncomment to test if no robot is up
 			#break
@@ -451,14 +464,26 @@ if wait_game:
 				break
 		except Exception as e:
 			print repr(e)
+		sys.stdout.flush()
 	
+	time.sleep(60)
 	print "arg_markers: ", arg_markers
 	for i in range(4):
-		try:
-			print "send: GO " + arg_markers + " to " + UDP_ADDR_START_WRITE + ":" + str(UDP_PORT_START_WRITE) + "..."
-			sock_start_write.sendto("GO " + arg_markers, (UDP_ADDR_START_WRITE, UDP_PORT_START_WRITE))
-		except Exception as e:
-			print repr(e)
+		target_port = 0
+		if UDP_PORT_ROBOT_UNICAST == 0: #multicast
+			target_addrs = [UDP_ADDR_ROBOT_CAST]
+			target_port = UDP_PORT_ROBOT_CAST
+		else:
+			target_addrs = UDP_ADDR_ROBOT_UNICAST
+			target_port = UDP_PORT_ROBOT_UNICAST
+
+		for target_addr in target_addrs:
+			try:
+				print "send: GO " + arg_markers + " to " + target_addr + ":" + str(target_port) + "..."
+				sock_start_write.sendto("GO " + arg_markers, (target_addr, target_port))
+			except Exception as e:
+				print repr(e)
+		sys.stdout.flush()
 		time.sleep(0.2)
 
 
@@ -467,6 +492,7 @@ if use_gui:
 
 print ""
 print "Listenning port " + str(UDP_PORT) + "..."
+sys.stdout.flush()
 while True:
 	time.sleep(0.05) # avoid to burn 100% CPU... and give a chance to a CtrlC :)
 	try:
@@ -481,7 +507,7 @@ while True:
 					msg += rob.getMessage()
 			if len(msg) > 0:
 				# send message to robots
-				print "SEND: " + msg
+				print "[" + str(now) + "] SEND: " + msg
 				try:
 					sock_robots.sendto(msg, (UDP_ADDR_ROBOT_CAST, UDP_PORT_ROBOT_CAST))
 				except Exception as e:
@@ -496,6 +522,7 @@ while True:
 			cam_id = int(data[0])
 			cameras[cam_id].update(data, now)
 		#cameras[cam_id].debug()
+		sys.stdout.flush()
 
 		# listen to any client who wants information
 	except Exception as e:

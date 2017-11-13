@@ -16,6 +16,7 @@ import struct
 config_file_name = "../config/config_wrapper.txt"
 UDP_PORT = 0
 UDP_ADDR = ""
+UNICAST=0
 no_wait = False
 for arg in sys.argv:
         if arg == "-nowait":
@@ -34,6 +35,8 @@ try:
 			UDP_PORT = int(value)
 		elif token == "UDP_ADDR":
 			UDP_ADDR = value
+		elif token == "UNICAST":
+			UNICAST = int(value)
 		else:
 			raise SyntaxError("Unrecognized token:" + token)
 	if UDP_PORT == 0:
@@ -43,21 +46,31 @@ except Exception as e:
 	sys.exit("Error reading config file " + config_file_name)
 config_file.close()
 
+print "UDP_PORT=", UDP_PORT
+print "UDP_ADDR=", UDP_ADDR
+print "UNICAST=", UNICAST
 
 # prepare socket
-sock_triang = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP MULTICAST
-sock_triang.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-sock_triang.bind((UDP_ADDR, UDP_PORT))
-mreq = struct.pack("4sl", socket.inet_aton(UDP_ADDR), socket.INADDR_ANY)
-sock_triang.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-sock_triang.settimeout(60)
+sock_triang = []
+if UNICAST == 0:
+	sock_triang = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP) # UDP MULTICAST
+	sock_triang.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	sock_triang.bind((UDP_ADDR, UDP_PORT))
+	mreq = struct.pack("4sl", socket.inet_aton(UDP_ADDR), socket.INADDR_ANY)
+	sock_triang.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+	sock_triang.settimeout(60)
+else:
+	sock_triang = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+	sock_triang.bind(("", UNICAST))
+	sock_triang.settimeout(60)
 
 nb_retry = 0
 arg_marker = ""
 
 # wait for game to start
 print ""
-print "Listenning port " + str(UDP_PORT) + "..."
+print "Listenning port " + str(UDP_PORT) + "... (or " + str(UNICAST) + " if non-zero)"
+sys.stdout.flush()
 while not no_wait:
 	try:
 		print "nb_retry: ", nb_retry
@@ -70,6 +83,7 @@ while not no_wait:
 	except Exception as e:
 		print repr(e)
 		pass
+	sys.stdout.flush()
 	nb_retry += 1
 
 # enable raspicam, let the code continue even if the command fails
@@ -80,11 +94,12 @@ except Exception as e:
 	print repr(e)
 # delay a shutdown, let the code continue even if the command fails
 try:
-	print "run: sleep 110 && sudo shutdown -h now &"
-	subprocess.call("sleep 110 && sudo shutdown -h now &", shell=True)
-	print "!! The system will shutdown in 110 seconds, kill the sleep process to abort the shutdown !!"
+	print "run: sleep 1500 && sudo shutdown -h now &"
+	subprocess.call("sleep 1500 && sudo shutdown -h now &", shell=True)
+	print "!! The system will shutdown in 1500 seconds, kill the sleep process to abort the shutdown !!"
 except Exception as e:
 	print repr(e)
+sys.stdout.flush()
 
 # prepare directories
 output_dir_template = "../results/"
@@ -93,6 +108,7 @@ try:
 	os.mkdir(output_dir_template)
 except Exception as e:
 	print repr(e)
+sys.stdout.flush()
 
 # try in loop to create a new dir for this game
 while True:
@@ -104,6 +120,7 @@ while True:
 		print repr(e)
 		pass
 	break
+sys.stdout.flush()
 
 # run main process
 command_line_template = "../build/detector"
@@ -116,6 +133,7 @@ for i in range(20):
 	print "run: ", command_line
 	print "stdout: ", stdout_str
 	print "stderr: ", stderr_str
+	sys.stdout.flush()
 	ret = 123
         with open(stdout_str, "w") as stdout_file:
         	with open(stderr_str, "w") as stderr_file:
