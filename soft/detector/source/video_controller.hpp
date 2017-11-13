@@ -1,7 +1,9 @@
 ﻿#ifndef VIDEO_CONTROLER_HPP
 #define VIDEO_CONTROLER_HPP
 
-//#define RASPICAM
+#ifdef RASPBERRY_PI
+#define RASPICAM
+#endif //RASPBERRY_PI
 
 #include "data.hpp"
 

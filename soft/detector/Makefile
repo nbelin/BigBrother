@@ -1,8 +1,15 @@
 CEREAL_ROOT ?= $(PWD)/../../../cereal
 
+UNAME_M := $(shell uname -m)
+
 CC=g++
 CFLAGS=-Wall -Wextra -g -Ofast -std=c++11 -I$(CEREAL_ROOT)/include
-LFLAGS=`pkg-config opencv --libs` -pthread #-lraspicam -lraspicam_cv
+LFLAGS=`pkg-config opencv --libs` -pthread
+# are we on Rasp ?
+ifeq ($(UNAME_M), armv7l)
+	CFLAGS += -D RASPBERRY_PI
+	LFLAGS += -lraspicam -lraspicam_cv
+endif
 
 BUILD_DIR ?= build
 EXE_NAME = detector
