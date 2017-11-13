@@ -5,11 +5,11 @@
 #include <algorithm>
 
 Marker::Marker(const Image3D& firstImage, bool isEnemy, const Rectangle &rect1, const Rectangle &rect2, const Rectangle &rect3) :
-    isEnemy(isEnemy) {
-
-    rects[0] = rect1;
+    isEnemy(! isEnemy) {
+    ///// reversed picture!
+    rects[0] = rect3;
     rects[1] = rect2;
-    rects[2] = rect3;
+    rects[2] = rect1;
     previousPos.reset();
 
     for (int i=0; i<3; ++i) {
@@ -77,7 +77,7 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
 
         const unsigned int length = previousAreas[0].maxJ - previousAreas[0].minJ;
         const unsigned int nj = previousAreas[0].minJ + length/2;
-        const unsigned int iMax = std::max(previousAreas[0].maxI + 10, image.height);
+        const unsigned int iMax = std::min(previousAreas[0].maxI + 10, image.height);
 
         for (unsigned int ni = startI; ni < iMax; ++ni) {
             if (rects[1].isPixelRightColor(colorMode, image, ni, nj)) {
@@ -90,7 +90,7 @@ bool Marker::detectFromPoint(const Image3D &image, PositionMarker &nextPos, unsi
                     return false;
                 }
 
-                const unsigned int iMax = std::max(previousAreas[1].maxI + 10, image.height);
+                const unsigned int iMax = std::min(previousAreas[1].maxI + 10, image.height);
 
                 for (unsigned int nni = startI; nni < iMax; ++nni) {
                     if (rects[2].isPixelRightColor(colorMode, image, nni, nj)) {
