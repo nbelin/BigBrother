@@ -12,7 +12,19 @@ DetectorController::DetectorController(Data& data)
             data.marker.push_back(getMarker(data.image, data.pm[i].pmID));
         }
     } else {
+        data.aruco_marker = new ArucoMarker;
         data.aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
+        data.aruco_params = new cv::aruco::DetectorParameters;
+        // data.aruco_params->doCornerRefinement = true;
+        data.aruco_params->cornerRefinementMaxIterations = 500;
+        // data.aruco_params->cornerRefinementWinSize = 1;
+        data.aruco_params->cornerRefinementMinAccuracy = 0.001;
+        // data.aruco_params->minMarkerPerimeterRate = 0.05;
+        // data.aruco_params->maxMarkerPerimeterRate = 0.2;
+        data.aruco_params->adaptiveThreshWinSizeMin = 10;
+        // data.aruco_params->adaptiveThreshWinSizeStep = 3;
+        data.aruco_params->adaptiveThreshWinSizeMax = 10;
+
     }
 
     data.image.id = 0;
@@ -34,7 +46,7 @@ void DetectorController::update(void) {
             }
         }
     } else {
-        data.aruco_marker.getNextPos(*(data.frame), data.aruco_dict, data.pm);
+        data.aruco_marker->getNextPos(*(data.frame), data, data.pm);
     }
 
     data.image.id++;
