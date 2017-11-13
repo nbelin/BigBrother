@@ -12,7 +12,7 @@ public:
     }
 
     void update(void) {
-        if ((data.color_choice & Color::LUV) == 0) {
+        if (data.method_choice != data.method_COLOR || (data.color_choice & Color::LUV) == 0) {
             return;
         }
         cv::cvtColor(*data.frame, data.luv, CV_BGR2Luv);

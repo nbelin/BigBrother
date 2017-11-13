@@ -24,10 +24,12 @@ void GUI::update(void) {
         return;
     }
 
-    // debug detected pixels for given data.marker/color
-    addMask(data.marker[0].masks[0], cv::Scalar(255, 0, 0));
-    addMask(data.marker[0].masks[1], cv::Scalar(0, 255, 0));
-    addMask(data.marker[0].masks[2], cv::Scalar(0, 0, 255));
+    if (data.method_choice == data.method_COLOR) {
+        // debug detected pixels for given data.marker/color
+        addMask(data.marker[0].masks[0], cv::Scalar(255, 0, 0));
+        addMask(data.marker[0].masks[1], cv::Scalar(0, 255, 0));
+        addMask(data.marker[0].masks[2], cv::Scalar(0, 0, 255));
+    }
     // show detected data.markers
     addRectangle(data.pm[0]);
 

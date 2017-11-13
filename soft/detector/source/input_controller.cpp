@@ -69,10 +69,15 @@ InputController::InputController(Data& data, int argc, char* argv[])
                 show_help_and_exit("invalid option");
             }
 
+        } else if (strcmp(argv[i], "-aruco") == 0) {
+            data.method_choice = data.method_ARUCO;
+
         } else if (strcmp(argv[i], "-hsv") == 0) {
+            data.method_choice = data.method_COLOR;
             data.color_choice = Color::HSV;
 
         } else if (strcmp(argv[i], "-luv") == 0) {
+            data.method_choice = data.method_COLOR;
             data.color_choice = Color::LUV;
 
         } else {
@@ -94,7 +99,7 @@ void InputController::show_help_and_exit(const char * errMsg) {
     std::cout << "-r=<result_filename>\n";
     std::cout << "-m=[1|2|3|4] (list of markers to detect, default: 1)\n";
     std::cout << "-g=[0|1|2] (level of gui, default: 0)\n";
-    std::cout << "-hsv | -luv (by default, hsv used)\n";
+    std::cout << "-aruco | -hsv | -luv (by default, aruco used)\n";
     exit(-1);
 }
 

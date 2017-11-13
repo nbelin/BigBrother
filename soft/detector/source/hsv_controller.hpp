@@ -21,7 +21,7 @@ public:
     }
 
     void update(void) {
-        if ((data.color_choice & Color::HSV) == 0) {
+        if (data.method_choice != data.method_COLOR || (data.color_choice & Color::HSV) == 0) {
             return;
         }
 #if 1

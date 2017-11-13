@@ -1,6 +1,8 @@
 #ifndef POSITION_MARKER_HPP
 #define POSITION_MARKER_HPP
 
+#include <iostream>
+
 class PositionMarker {
 public:
     PositionMarker(int pmID = 0) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}

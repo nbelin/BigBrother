@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/aruco.hpp>
 #include <vector>
 
 /*
@@ -19,6 +20,17 @@ const std::vector<std::vector<cv::Vec3b>> markers = {marker1, marker2, marker3, 
 
 int main(int argc, char* argv[]) {
     char buffer[256];
+    if (argc == 2 && strcmp(argv[1], "aruco") == 0) {
+        cv::Mat generated;
+        cv::Ptr<cv::aruco::Dictionary> aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
+        for (int i=0; i<4*4; ++i) {
+            cv::aruco::drawMarker(aruco_dict, i, 200, generated, 1);
+
+            snprintf(buffer, sizeof(buffer), "aruco_marker_%d.png", i);
+            cv::imwrite(buffer, generated);
+        }
+        return 0;
+    }
     const int width = 1000;
     const int height = 300;
     cv::Mat mat(height, width, CV_8UC3);

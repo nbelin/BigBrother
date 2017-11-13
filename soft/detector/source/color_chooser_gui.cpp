@@ -273,6 +273,6 @@ void ColorChooserGUI::update(void) {
         }
     }
 
-    if (data.image.id > 210)
+    if (data.image.id > 20)
         cv::waitKey(300);
 }

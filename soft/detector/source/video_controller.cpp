@@ -52,7 +52,7 @@ VideoController::VideoController(Data& data)
 
     cap >> * data.frame;
 #endif
-    resize(*data.frame, *data.frame, cv::Size(640, 2*480));
+    //resize(*data.frame, *data.frame, cv::Size(640, 2*480));
     std::cout << "(" << data.frame->cols << ", " << data.frame->rows << ")\n";
 
     if (captureDefaultCam) {
@@ -60,13 +60,6 @@ VideoController::VideoController(Data& data)
         thread = std::thread(&VideoController::jobGetImage, this);
         lastMatId = NBWORKMATS - 1;
         readyMatId = NBWORKMATS - 1;
-    }
-
-    // This first (dummy) image is used to initialize buffers in Classes
-    data.image = Image3D(data.frame->cols, data.frame->rows, NULL);
-
-    for (size_t i=0; i<data.pm.size(); ++i) {
-        data.marker.push_back(getMarker(data.image, data.pm[i].pmID));
     }
 
 
@@ -104,7 +97,7 @@ void VideoController::update(void) {
             exit(0);
         }
 
-        resize(* data.frame, * data.frame, cv::Size(640, 2*480));
+        //resize(* data.frame, * data.frame, cv::Size(640, 2*480));
     }
 }
 
@@ -124,7 +117,7 @@ void VideoController::jobGetImage() {
                 exit(0);
             }
 
-            resize(workingMats[i], workingMats[i], cv::Size(640, 2*480));
+            //resize(workingMats[i], workingMats[i], cv::Size(640, 2*480));
             readyMatId = i;
         }
     }

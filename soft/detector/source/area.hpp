@@ -19,7 +19,7 @@ public:
   void display() {
       std::cout << "(" << minI << ", " << minJ << ") \t -> (" << maxI << ", " << maxJ << ")\n";
       std::cout << "size=" << size << " \tw=" << width << " \th=" << height << "\n";
-      std::cout << "count=" << count << " \trank=" << rank << "\n";
+      std::cout << "count=" << count << " \trank=" << rank << std::endl;
   }
 };
 

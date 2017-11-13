@@ -1,7 +1,7 @@
-#ifndef VIDEO_CONTROLER_HPP
+﻿#ifndef VIDEO_CONTROLER_HPP
 #define VIDEO_CONTROLER_HPP
 
-#define RASPICAM
+//#define RASPICAM
 
 #include "data.hpp"
 

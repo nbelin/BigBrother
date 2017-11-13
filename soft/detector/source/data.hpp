@@ -3,6 +3,7 @@
 
 #include "image.hpp"
 #include "marker.hpp"
+#include "aruco_marker.hpp"
 
 #include <vector>
 #include <string>
@@ -11,16 +12,21 @@
 
 
 struct Data {
+    static const int method_COLOR = 1;
+    static const int method_ARUCO = 2;
     cv::Mat * frame;
     cv::Mat luv;
     cv::Mat hsv;
     Image3D image = {0,0,NULL};
     std::vector<PositionMarker> pm;
     std::vector<Marker> marker;
+    ArucoMarker aruco_marker;
+    cv::Ptr<cv::aruco::Dictionary> aruco_dict;
     int gui_level;
     std::string input_video_filename;
     std::string output_video_filename;
     std::string result_filename;
+    int method_choice;
     int color_choice;
 };
 
