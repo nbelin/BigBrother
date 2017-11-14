@@ -25,18 +25,20 @@ VideoController::VideoController(Data& data)
     data.frame = & workingMats[NBWORKMATS - 1];
 
 #ifdef RASPICAM
-    raspicap.set(CV_CAP_PROP_FORMAT, CV_8UC3);
-//    raspicap.set(CV_CAP_PROP_FRAME_WIDTH, 1640);
-//    raspicap.set(CV_CAP_PROP_FRAME_HEIGHT, 1232);
+    if (captureDefaultCam == true) {
+        raspicap.set(CV_CAP_PROP_FORMAT, CV_8UC3);
+    //    raspicap.set(CV_CAP_PROP_FRAME_WIDTH, 960);
+    //    raspicap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
 
-    if(!raspicap.open()) {
-        std::cout << "Failed to open video (raspicam)\n";
-        exit(-1);
-    }
+        if(!raspicap.open()) {
+            std::cout << "Failed to open video (raspicam)\n";
+            exit(-1);
+        }
 
-    raspicap.grab();
-    raspicap.retrieve(*data.frame);
-#else
+        raspicap.grab();
+        raspicap.retrieve(*data.frame);
+    } else {
+#endif
     cap = open_cam(data.input_video_filename);
 
     if(!cap.isOpened()) {
@@ -51,6 +53,8 @@ VideoController::VideoController(Data& data)
 //    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 2*480);
 
     cap >> * data.frame;
+#ifdef RASPICAM
+    }
 #endif
     //resize(*data.frame, *data.frame, cv::Size(640, 2*480));
     std::cout << "(" << data.frame->cols << ", " << data.frame->rows << ")\n";
