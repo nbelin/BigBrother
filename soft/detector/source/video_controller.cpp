@@ -25,7 +25,7 @@ VideoController::VideoController(Data& data)
     data.frame = & workingMats[NBWORKMATS - 1];
 
 #ifdef RASPICAM
-    if (captureDefaultCam == true) {
+    if (data.input_video_filename.size() == 0) {
         raspicap.set(CV_CAP_PROP_FORMAT, CV_8UC3);
     //    raspicap.set(CV_CAP_PROP_FRAME_WIDTH, 960);
     //    raspicap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
