@@ -10,8 +10,6 @@
 
 #include <opencv2/opencv.hpp>
 
-class ArucoMarker;
-
 struct Data {
     static const int method_COLOR = 1;
     static const int method_ARUCO = 2;
@@ -21,7 +19,6 @@ struct Data {
     Image3D image = {0,0,NULL};
     std::vector<PositionMarker> pm;
     std::vector<Marker> marker;
-    ArucoMarker * aruco_marker;
     cv::Ptr<cv::aruco::Dictionary> aruco_dict;
     cv::Ptr<cv::aruco::DetectorParameters> aruco_params;
     int gui_level;

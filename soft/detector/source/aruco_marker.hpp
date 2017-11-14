@@ -9,16 +9,13 @@
 
 class ArucoMarker {
 public:
-    ArucoMarker();
-    bool getNextPos(cv::Mat& image, const struct Data& data, std::vector<PositionMarker> &nextPos);
+    bool getNextPos(cv::Mat& image, const struct Data& data, std::vector<PositionMarker>& nextPos);
+    std::vector<std::vector<cv::Point2f> > marker_corners;
+    std::vector<int> markers_ids;
 
 private:
     static const unsigned int MIN_PM_HEIGHT = 10;
     static const unsigned int MAX_PM_HEIGHT = 200;
-    std::vector<PositionMarker> previousPos;    
-    std::vector<std::vector<cv::Point2f> > marker_corners;
-    std::vector<int> markers_ids;
-
 };
 
 #endif //ARUCOMARKER_HPP

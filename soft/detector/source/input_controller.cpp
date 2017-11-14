@@ -4,6 +4,7 @@
 
 InputController::InputController(Data& data, int argc, char* argv[])
     : data(data) {
+    data.method_choice = data.method_ARUCO; // default
     char c;
     for (int i=1; i<argc; ++i) {
         if (argv[i][0] == '-' && argv[i][1] != '\0' && argv[i][2] == '=') {
