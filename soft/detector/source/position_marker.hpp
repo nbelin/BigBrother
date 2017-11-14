@@ -15,7 +15,7 @@ public:
     float confidence;
     int dx;
     int dsize;
-    void display() {
+    void display() const {
         std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << "\n";
         std::cout << "minI=" << minI << " \tmaxI=" << maxI << "\n";
         std::cout << "confidence=" << confidence << " \tdx=" << dx << " \tdsize=" << dsize << "\n";
@@ -30,10 +30,10 @@ public:
         dx = 0;
         dsize = 0;
     }
-    bool hasBeenFound() {
+    bool hasBeenFound() const {
         return confidence > 0;
     }
-    bool toWorld(float * angle, int * distance) {
+    bool toWorld(float * angle, int * distance) const {
         if (angle == nullptr || distance == nullptr) {
             return false;
         }

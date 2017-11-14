@@ -16,6 +16,7 @@ public:
 private:
     static const unsigned int MIN_PM_HEIGHT = 10;
     static const unsigned int MAX_PM_HEIGHT = 200;
+    std::vector<int> matching_markers;
 };
 
 #endif //ARUCOMARKER_HPP

@@ -67,6 +67,9 @@ void DetectorController::jobArucoMarkers(int id) {
     // (id == 1) => look for enemies (top of picture)
     ArucoMarker aruco_marker;
     std::vector<PositionMarker> pm;
+    pm.resize(2); // max 2 robots detected on a half-picture
+    pm[0].pmID = 2*id + 0;
+    pm[1].pmID = 2*id + 1;
     cv::Rect rect(0, id * data.frame->rows / 2, data.frame->cols, data.frame->rows / 2); // to crop half of image
     while (true) {
         while (job_ready[id] == false) {
@@ -76,9 +79,10 @@ void DetectorController::jobArucoMarkers(int id) {
 
         cv::Mat sub_image = (*(data.frame))(rect);
         aruco_marker.getNextPos(sub_image, data, pm);
-        // markers 0 to 7 are allies
-        // markers 8 to 15 are enemies
         //aruco_marker.markers_ids......
+        for (size_t i=0; i<pm.size(); ++i) {
+            data.pm[pm[i].pmID] = pm[i];
+        }
         job_done[id] = true;
     }
 }

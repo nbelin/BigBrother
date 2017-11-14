@@ -5,8 +5,17 @@ GUI::GUI(Data& data)
 }
 
 void GUI::addRectangle(const PositionMarker& pm) {
-    cv::rectangle(*data.frame, cv::Point(pm.x - pm.size/2, pm.minI), cv::Point(pm.x + pm.size/2, pm.maxI), cv::Scalar(0, 0, 0));
-    cv::rectangle(*data.frame, cv::Point(pm.x - pm.size/2 + 1, pm.minI + 1), cv::Point(pm.x + pm.size/2 - 1, pm.maxI - 1), cv::Scalar(0, 0, 0));
+    if (pm.hasBeenFound() == false) {
+        return;
+    }
+    cv::rectangle(*data.frame,
+                  cv::Point(pm.x - pm.size/2, pm.minI),
+                  cv::Point(pm.x + pm.size/2, pm.maxI),
+                  cv::Scalar(0, 255, 0));
+    cv::rectangle(*data.frame,
+                  cv::Point(pm.x - pm.size/2 + 1, pm.minI + 1),
+                  cv::Point(pm.x + pm.size/2 - 1, pm.maxI - 1),
+                  cv::Scalar(0, 255, 0));
 }
 
 void GUI::addMask(const Image& mask, const cv::Scalar& color) {
@@ -42,8 +51,8 @@ void GUI::update(void) {
     // show the final image
     cv::imshow("img", *data.frame);
     cv::waitKey(50);
-//    if (data.image.id > 100)
-//        cv::waitKey(500);
+//    if (data.image.id > 10)
+//        cv::waitKey(2000);
 //    if (data.image.id > 175)
 //        cv::waitKey(4500);
 }
