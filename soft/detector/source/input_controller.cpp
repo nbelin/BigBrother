@@ -6,6 +6,7 @@ InputController::InputController(Data& data, int argc, char* argv[])
     : data(data) {
     data.method_choice = data.method_ARUCO; // default
     char c;
+    size_t found;
     for (int i=1; i<argc; ++i) {
         if (argv[i][0] == '-' && argv[i][1] != '\0' && argv[i][2] == '=') {
             switch (argv[i][1]) {
@@ -23,6 +24,14 @@ InputController::InputController(Data& data, int argc, char* argv[])
                     show_help_and_exit("-o arg already present");
                 }
                 data.output_video_filename = &argv[i][3];
+                found = data.output_video_filename.find(':');
+                if (found != std::string::npos) {
+                    data.output_video_codec = data.output_video_filename.substr(found+1);
+                    if (data.output_video_codec.size() != 4) {
+                        show_help_and_exit("output video codec must have length of 4");
+                    }
+                    data.output_video_filename.resize(found);
+                }
                 std::cout << "output video: " << data.output_video_filename << "\n";
                 break;
 
@@ -96,7 +105,7 @@ void InputController::show_help_and_exit(const char * errMsg) {
         std::cout << errMsg << "\n\n";
     }
     std::cout << "-i=<input_video_filename>\n";
-    std::cout << "-o=<output_video_filename>\n";
+    std::cout << "-o=<output_video_filename>{:<FOURCC video codec>}\n";
     std::cout << "-r=<result_filename>\n";
     std::cout << "-m=[1|2|3|4] (list of markers to detect, default: 1)\n";
     std::cout << "-g=[0|1|2] (level of gui, default: 0)\n";

@@ -69,9 +69,18 @@ VideoController::VideoController(Data& data)
 
     // Init VideoWriter to save the camera video to allow playback
     if (data.output_video_filename.size() > 0) {
-        std::cout << "Opening (output) file : " << data.output_video_filename << "\n";
-        //writer.open(data.output_video_filename, CV_FOURCC('M','P','E','G'), 30, data.frame->size());
-        writer.open(data.output_video_filename, CV_FOURCC('M','J', 'P','G'), 30, data.frame->size());
+        std::cout << "Opening (output) file: " << data.output_video_filename << "\n";
+        if (data.output_video_codec.size() == 0) {
+            //writer.open(data.output_video_filename, CV_FOURCC('M','P','E','G'), 30, data.frame->size());
+            writer.open(data.output_video_filename, CV_FOURCC('M','J', 'P','G'), 30, data.frame->size());
+        } else {
+            std::cout << "Codec: " << data.output_video_codec << "\n";
+            writer.open(data.output_video_filename, CV_FOURCC(
+                            data.output_video_codec[0],
+                        data.output_video_codec[1],
+                    data.output_video_codec[2],
+                    data.output_video_codec[3]), 30, data.frame->size());
+        }
 
         if(!writer.isOpened()) {
             std::cout << "Failed to open video\n";

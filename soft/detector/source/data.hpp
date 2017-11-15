@@ -24,6 +24,7 @@ struct Data {
     int gui_level;
     std::string input_video_filename;
     std::string output_video_filename;
+    std::string output_video_codec;
     std::string result_filename;
     int method_choice;
     int color_choice;
