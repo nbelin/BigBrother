@@ -15,15 +15,21 @@ DetectorController::DetectorController(Data& data)
         //data.aruco_marker = new ArucoMarker;
         data.aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
         data.aruco_params = new cv::aruco::DetectorParameters;
-        // data.aruco_params->doCornerRefinement = true;
-        data.aruco_params->cornerRefinementMaxIterations = 500;
+        // data.aruco_params->doCornerRefinement = true; ===> does not compile
+        data.aruco_params->cornerRefinementMaxIterations = 0;
         // data.aruco_params->cornerRefinementWinSize = 1;
-        data.aruco_params->cornerRefinementMinAccuracy = 0.001;
+        data.aruco_params->cornerRefinementMinAccuracy = 0;
         // data.aruco_params->minMarkerPerimeterRate = 0.05;
         // data.aruco_params->maxMarkerPerimeterRate = 0.2;
         data.aruco_params->adaptiveThreshWinSizeMin = 10;
-        // data.aruco_params->adaptiveThreshWinSizeStep = 3;
+        data.aruco_params->adaptiveThreshWinSizeStep = 3;
         data.aruco_params->adaptiveThreshWinSizeMax = 10;
+        //data.aruco_params->minMarkerPerimeterRate = 0.01;
+        data.aruco_params->maxErroneousBitsInBorderRate = 0.8;
+        data.aruco_params->minOtsuStdDev = 0.01;
+        //data.aruco_params->polygonalApproxAccuracyRate = 0.00000000001; ===> can only worsen
+        //data.aruco_params->perpectiveRemovePixelPerCell = 4; ===> does not compile
+        data.aruco_params->perspectiveRemoveIgnoredMarginPerCell = 0.4;
 
         thread_aruco[0] = std::thread(&DetectorController::jobArucoMarkers, this, 0);
         thread_aruco[1] = std::thread(&DetectorController::jobArucoMarkers, this, 1);

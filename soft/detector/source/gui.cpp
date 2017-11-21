@@ -50,7 +50,7 @@ void GUI::update(void) {
 
     // show the final image
     cv::imshow("img", *data.frame);
-    cv::waitKey(50);
+    cv::waitKey(200);
 //    if (data.image.id > 10)
 //        cv::waitKey(2000);
 //    if (data.image.id > 175)
