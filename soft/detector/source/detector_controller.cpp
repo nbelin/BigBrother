@@ -76,7 +76,9 @@ void DetectorController::jobArucoMarkers(int id) {
     pm.resize(2); // max 2 robots detected on a half-picture
     pm[0].pmID = 2*id + 0;
     pm[1].pmID = 2*id + 1;
-    cv::Rect rect(0, id * data.frame->rows / 2, data.frame->cols, data.frame->rows / 2); // to crop half of image
+    int first_row = id==0 ? 0 : data.frame->rows / 2 - 20; // 20 more pixels to be sure to include middle of image
+    int nb_row = data.frame->rows / 2 + 20;
+    cv::Rect rect(0, first_row, data.frame->cols, nb_row); // to crop half of image
     while (true) {
         while (job_ready[id] == false) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));

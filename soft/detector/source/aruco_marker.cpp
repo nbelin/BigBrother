@@ -1,5 +1,6 @@
 #include "aruco_marker.hpp"
 #include <iostream>
+#include <cmath>
 
 bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vector<PositionMarker> &nextPos) {
     for (size_t i=0; i<nextPos.size(); ++i) {
@@ -52,27 +53,32 @@ bool ArucoMarker::convertCornersToPositionMarker(PositionMarker & pos) {
     }
     for (size_t j=0; j<matching_markers.size(); ++j) {
         const std::vector<cv::Point2f>& corners = marker_corners[matching_markers[j]];
+        const int id = markers_ids[matching_markers[j]];
 
-        float left_height = corners[3].y - corners[0].y;
-        float right_height = corners[2].y - corners[1].y;
-        float mean_x = (corners[2].x + corners[3].x) / 2;
+        const float left_height = corners[3].y - corners[0].y;
+        const float right_height = corners[2].y - corners[1].y;
+        const float mean_x = (corners[2].x + corners[3].x) / 2;
+        const float bottom_width = corners[2].x - corners[3].x;
 
         if (left_height < right_height) {
-            float ratio = right_height / left_height;
-            pos.x = mean_x - 4.f * (1.f-ratio) * right_height; // try to find the actual center of the cube (approx. for now)
+            const float ratio = std::min(bottom_width / right_height, 1.f);
+            pos.x = mean_x + 1.f * (1.f-ratio) * right_height; // try to find the actual center of the cube (approx. for now)
+            pos.size = right_height;
+            pos.orientation = int(360 + id * 90 + std::acos(ratio) * 180.f / M_PI) % 360;
             pos.minI = corners[1].y;
             pos.maxI = corners[2].y;
-            pos.size = right_height;
             pos.confidence = 1;
         } else {
-            float ratio = left_height / right_height;
-            pos.x = mean_x + 4.f * (1.f-ratio) * left_height; // try to find the actual center of the cube (approx. for now)
+            const float ratio = std::min(bottom_width / left_height, 1.f);
+            pos.x = mean_x - 1.f * (1.f-ratio) * left_height; // try to find the actual center of the cube (approx. for now)
+            pos.size = left_height;
+            pos.orientation = int(360 + id * 90 - std::acos(ratio) * 180.f / M_PI) % 360;
             pos.minI = corners[0].y;
             pos.maxI = corners[3].y;
-            pos.size = left_height;
             pos.confidence = 1;
         }
-        // for now do not take into account the 2nd detected marker
+
+        // for now do not take into account the (potential) 2nd detected marker
         return true;
     }
     return false;

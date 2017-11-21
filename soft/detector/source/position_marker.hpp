@@ -5,18 +5,19 @@
 
 class PositionMarker {
 public:
-    PositionMarker(int pmID = 0) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
-    unsigned int pmID;
-    unsigned int imageID;
-    unsigned int x;
-    unsigned int size;
-    unsigned int minI;
-    unsigned int maxI;
+    PositionMarker(unsigned short pmID = 0) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
+    unsigned short pmID;
+    unsigned short imageID;
+    unsigned short x;
+    unsigned short size;
+    unsigned short orientation;
+    unsigned short minI;
+    unsigned short maxI;
     float confidence;
-    int dx;
-    int dsize;
+    short dx;
+    short dsize;
     void display() const {
-        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << "\n";
+        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << " \torientation=" << orientation << "\n";
         std::cout << "minI=" << minI << " \tmaxI=" << maxI << "\n";
         std::cout << "confidence=" << confidence << " \tdx=" << dx << " \tdsize=" << dsize << "\n";
     }
@@ -24,6 +25,7 @@ public:
         imageID = 0;
         x = 0;
         size = 0;
+        orientation = 0;
         minI = 0;
         maxI = 0;
         confidence = 0;

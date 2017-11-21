@@ -1,4 +1,5 @@
 #include "gui.hpp"
+#include <cmath>
 
 GUI::GUI(Data& data)
     : data(data) {
@@ -16,6 +17,13 @@ void GUI::addRectangle(const PositionMarker& pm) {
                   cv::Point(pm.x - pm.size/2 + 1, pm.minI + 1),
                   cv::Point(pm.x + pm.size/2 - 1, pm.maxI - 1),
                   cv::Scalar(0, 255, 0));
+    if (pm.orientation > 0) {
+        cv::line(*data.frame,
+                 cv::Point(pm.x, (pm.minI + pm.maxI)/2),
+                 cv::Point(pm.x + pm.size * cos(pm.orientation * M_PI / 180.f) / 2,
+                           (pm.minI + pm.maxI)/2 + pm.size * sin(pm.orientation * M_PI / 180.f) / 2),
+                 cv::Scalar(0, 255, 0));
+    }
 }
 
 void GUI::addMask(const Image& mask, const cv::Scalar& color) {
@@ -43,10 +51,10 @@ void GUI::update(void) {
     addRectangle(data.pm[0]);
 
     // add middle acceptance lines:
-    int middleI = data.image.height / 2;
-    int accept = 40;
-    cv::line(*data.frame, cv::Point(0, middleI - accept), cv::Point(data.image.width-1, middleI - accept), cv::Scalar(0, 0, 0));
-    cv::line(*data.frame, cv::Point(0, middleI + accept), cv::Point(data.image.width-1, middleI + accept), cv::Scalar(0, 0, 0));
+    int middleI = data.frame->rows / 2;
+    int accept = 20;
+    cv::line(*data.frame, cv::Point(0, middleI - accept), cv::Point(data.frame->cols-1, middleI - accept), cv::Scalar(0, 0, 0));
+    cv::line(*data.frame, cv::Point(0, middleI + accept), cv::Point(data.frame->cols-1, middleI + accept), cv::Scalar(0, 0, 0));
 
     // show the final image
     cv::imshow("img", *data.frame);
