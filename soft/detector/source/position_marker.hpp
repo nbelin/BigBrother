@@ -58,7 +58,7 @@ public:
          * R^2 = 0.9999239459 (pretty good!)
          */
         *angle = 0.0015604329 * x - 0.4902846562;
-        *distance = 2*30000.0/size; //magic for now, to be measured later [[[ new video format !! ]]]
+        *distance = 30000.0/size; //magic for now, to be measured later [[[ warning depends on video format FIXME !! ]]]
         return true;
     }
 };

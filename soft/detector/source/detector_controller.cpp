@@ -69,16 +69,22 @@ void DetectorController::update(void) {
 }
 
 void DetectorController::jobArucoMarkers(int id) {
-    // (id == 0) => look for allies (bottom of picture)
-    // (id == 1) => look for enemies (top of picture)
+    // (id == 0) => look for enemy robots (top of picture)
+    // (id == 1) => look for ally robots (bottom of picture)
     ArucoMarker aruco_marker;
     std::vector<PositionMarker> pm;
     pm.resize(2); // max 2 robots detected on a half-picture
-    pm[0].pmID = 2*id + 0;
-    pm[1].pmID = 2*id + 1;
+    if (id == 0) { // the first half of the picture contains enemy robots
+        pm[0].pmID = 2;
+        pm[0].pmID = 3;
+    } else { // the second half contains ally robots
+        pm[0].pmID = 0;
+        pm[1].pmID = 1;
+    }
     int first_row = id==0 ? 0 : data.frame->rows / 2 - 20; // 20 more pixels to be sure to include middle of image
     int nb_row = data.frame->rows / 2 + 20;
     cv::Rect rect(0, first_row, data.frame->cols, nb_row); // to crop half of image
+
     while (true) {
         while (job_ready[id] == false) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));

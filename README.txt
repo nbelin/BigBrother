@@ -1,5 +1,6 @@
 # BigBrother
 
+
     j>
 1+---------------------------+
  |                           |
@@ -21,6 +22,14 @@ Camera 1 : 25°
 Camera 2 : 0°
 Camera 3 : -5°
 
+
+
+0- depedencies
+Cereal
+opencv_contrib
+opencv 3
+raspicam
+gstreamer 1.0
 
 
 1- convert robot detection angle (from the point of view of the camera) to global positionning
