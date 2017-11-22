@@ -21,9 +21,9 @@ DetectorController::DetectorController(Data& data)
         data.aruco_params->cornerRefinementMinAccuracy = 0;
         // data.aruco_params->minMarkerPerimeterRate = 0.05;
         // data.aruco_params->maxMarkerPerimeterRate = 0.2;
-        data.aruco_params->adaptiveThreshWinSizeMin = 10;
-        data.aruco_params->adaptiveThreshWinSizeStep = 3;
-        data.aruco_params->adaptiveThreshWinSizeMax = 10;
+        data.aruco_params->adaptiveThreshWinSizeMin = 5;
+        data.aruco_params->adaptiveThreshWinSizeStep = 2;
+        data.aruco_params->adaptiveThreshWinSizeMax = 5;
         //data.aruco_params->minMarkerPerimeterRate = 0.01;
         data.aruco_params->maxErroneousBitsInBorderRate = 0.8;
         data.aruco_params->minOtsuStdDev = 0.01;

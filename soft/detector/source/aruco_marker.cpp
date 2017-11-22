@@ -8,7 +8,7 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
     }
 
     // need to reset vectors?
-    cv::aruco::detectMarkers(image, data.aruco_dict, marker_corners, markers_ids);//, data.aruco_params);
+    cv::aruco::detectMarkers(image, data.aruco_dict, marker_corners, markers_ids, data.aruco_params);
 
 //    if (nextPos[0].pmID == 0) {
 //        cv::aruco::drawDetectedMarkers(image, marker_corners, markers_ids);
