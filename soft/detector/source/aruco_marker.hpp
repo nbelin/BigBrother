@@ -18,6 +18,9 @@ private:
     std::vector<int> matching_markers;
     std::vector<std::vector<cv::Point2f> > marker_corners;
     std::vector<int> markers_ids;
+
+    std::vector<cv::Vec3d> rvecs;
+    std::vector<cv::Vec3d> tvecs;
 };
 
 #endif //ARUCOMARKER_HPP

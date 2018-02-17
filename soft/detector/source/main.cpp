@@ -26,10 +26,10 @@ int main(int argc, char* argv[]) {
 
     InputController input(data, argc, argv);
     VideoController video(data);
+    CalibrateController calibrate(data);
     HSVController hsv(data);
     LUVController luv(data);
     DetectorController detector(data);
-    CalibrateController calibrate(data);
     GUI gui(data);
     Communication comm(data);
     ColorChooserGUI ccgui(data);
@@ -38,9 +38,9 @@ int main(int argc, char* argv[]) {
     while(1) {
         input.update();
         video.update(); // get a new frame from camera
+        detector.update();
         hsv.update();
         luv.update();
-        detector.update();
         calibrate.update();
         gui.update();
         comm.update();

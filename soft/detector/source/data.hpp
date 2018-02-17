@@ -29,6 +29,12 @@ struct Data {
     std::string result_filename;
     int method_choice;
     int color_choice;
+
+    // calibration parameters
+    cv::Mat cameraMatrix;
+    cv::Mat distCoef;
+    std::vector<cv::Mat> rvecs;
+    std::vector<cv::Mat> tvecs;
 };
 
 #endif//DATA_HPP

@@ -7,7 +7,7 @@ CalibrateController::CalibrateController(Data& data) : data(data) {
 
     cv::Point3f workingPoint;
     workingPoint.z = 0;
-    double squareSize = 29.2 / 8;
+    double squareSize = 292.0 / 8; // millimeters
     for (size_t i=0; i<7; ++i) {
         workingPoint.x = squareSize * i;
         for (size_t j=0; j<7; ++j) {
@@ -42,7 +42,8 @@ void CalibrateController::update(void) {
 
     if (key == 10) { // enter
             std::cout << "Calibrating...\n";
-            lastCalibrationResult = cv::calibrateCamera(realPointsVector, foundPoints, data.frame->size(), cameraMatrix, distCoef, rvecs, tvecs);
+            lastCalibrationResult = cv::calibrateCamera(realPointsVector, foundPoints, data.frame->size(),
+                                                        data.cameraMatrix, data.distCoef, data.rvecs, data.tvecs);
             std::cout << "Final re-projection error: " << lastCalibrationResult << std::endl;
             saveCameraParams("camera.yml");
     } else if (key >= 0 && lastFoundPoints.size() > 0) {
@@ -64,10 +65,10 @@ void CalibrateController::saveCameraParams(const char *filename) {
     fs << "calibration_date" << asctime(localtime(&rawTime));
     fs << "calibration_result" << lastCalibrationResult;
     fs << "number_frames" << (int)foundPoints.size();
-    fs << "camera_matrix" << cameraMatrix;
-    fs << "dist_coeffs" << distCoef;
-    fs << "rvecs" << rvecs;
-    fs << "tvecs" << tvecs;
+    fs << "camera_matrix" << data.cameraMatrix;
+    fs << "dist_coeffs" << data.distCoef;
+    fs << "rvecs" << data.rvecs;
+    fs << "tvecs" << data.tvecs;
 
     std::cout << "Saved camera params into file " << filename << std::endl;
 }
@@ -80,10 +81,10 @@ void CalibrateController::loadCameraParams(const char *filename) {
     fs["calibration_date"] >> date;
     fs["calibration_result"] >> lastCalibrationResult;
     fs["number_frames"] >> numberFrames;
-    fs["camera_matrix"] >> cameraMatrix;
-    fs["dist_coeffs"] >> distCoef;
-    fs["rvecs"] >> rvecs;
-    fs["tvecs"] >> tvecs;
+    fs["camera_matrix"] >> data.cameraMatrix;
+    fs["dist_coeffs"] >> data.distCoef;
+    fs["rvecs"] >> data.rvecs;
+    fs["tvecs"] >> data.tvecs;
 
     std::cout << "Read camera parameters from " << filename << ": \n";
     std::cout << "calibration_date: " << date;

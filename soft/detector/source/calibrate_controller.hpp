@@ -14,10 +14,6 @@ private:
     std::vector<cv::Point3f> realPoints;
     std::vector<std::vector<cv::Point3f>> realPointsVector;
     cv::Mat showMat;
-    cv::Mat cameraMatrix;
-    cv::Mat distCoef;
-    std::vector<cv::Mat> rvecs;
-    std::vector<cv::Mat> tvecs;
     double lastCalibrationResult;
 
 public:

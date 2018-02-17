@@ -9,6 +9,32 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 
     // need to reset vectors?
     cv::aruco::detectMarkers(image, data.aruco_dict, marker_corners, markers_ids, data.aruco_params);
+    cv::aruco::estimatePoseSingleMarkers(marker_corners, 65, data.cameraMatrix, data.distCoef, rvecs, tvecs);
+    for (size_t i=0; i<markers_ids.size(); ++i) {
+        cv::Mat rot_mat;
+        cv::Rodrigues(rvecs[i], rot_mat);
+
+        // transpose of rot_mat for easy columns extraction
+        cv::Mat rot_mat_t = rot_mat.t();
+        // transform along z axis
+        double * rz = rot_mat_t.ptr<double>(2); // x=0, y=1, z=2
+        double half_side = 35.;
+        tvecs[i][0] +=  rz[0]*half_side;
+        tvecs[i][1] +=  rz[1]*half_side;
+        tvecs[i][2] +=  rz[2]*half_side;
+
+//        std::cout << "dx " << rz[0] << std::endl;
+//        std::cout << "dy " << rz[1] << std::endl;
+//        std::cout << "dz " << rz[2] << std::endl << std::endl;
+
+//        std::cout << std::atan2(rz[2], rz[0]) * 180. / M_PI << std::endl;
+
+        cv::aruco::drawAxis(image, data.cameraMatrix, data.distCoef, rvecs[i], tvecs[i], 50.);
+//        std::cout << "x " << rvecs[i][0] << std::endl;
+//        std::cout << "y " << rvecs[i][1] << std::endl;
+//        std::cout << "z " << rvecs[i][2] << std::endl << std::endl;
+    }
+    return true;
 
 //    if (nextPos[0].pmID == 0) {
 //        cv::aruco::drawDetectedMarkers(image, marker_corners, markers_ids);
@@ -25,7 +51,23 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
                 matching_markers.push_back(j);
             }
         }
-        convertCornersToPositionMarker(nextPos[i]);
+
+        if (matching_markers.size() == 0) {
+            continue; // robot not detected
+        }
+
+        // for now keep only first matching marker for this robot
+        for (size_t i=0; i<marker_corners[matching_markers[0]].size(); ++i) {
+            std::cout << marker_corners[matching_markers[0]][i] << std::endl;
+        }
+        std::cout << data.cameraMatrix << std::endl;
+        std::cout << data.distCoef << std::endl;
+        std::cout << rvecs.size() << std::endl;
+        std::cout << tvecs.size() << std::endl;
+        cv::aruco::estimatePoseSingleMarkers(marker_corners[matching_markers[0]], 65, data.cameraMatrix, data.distCoef, rvecs, tvecs);
+        cv::aruco::drawAxis(image, data.cameraMatrix, data.distCoef, rvecs, tvecs, 1);
+
+        //convertCornersToPositionMarker(nextPos[i]);
     }
 
     return true;
