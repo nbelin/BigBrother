@@ -18,11 +18,15 @@ private:
     cv::Mat distCoef;
     std::vector<cv::Mat> rvecs;
     std::vector<cv::Mat> tvecs;
+    double lastCalibrationResult;
 
 public:
     CalibrateController(Data& data);
 
     void update(void);
+
+    void saveCameraParams(const char * filename);
+    void loadCameraParams(const char * filename);
 };
 
 #endif //CALIBRATE_CONTROLLER_HPP
