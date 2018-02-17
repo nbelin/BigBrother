@@ -3,7 +3,7 @@ CEREAL_ROOT ?= $(PWD)/../../../cereal
 UNAME_M := $(shell uname -m)
 
 CC=g++
-CFLAGS=-Wall -Wextra -g -Ofast -std=c++11 -I$(CEREAL_ROOT)/include
+CFLAGS=-Wall -Wextra -g -std=c++11 -I$(CEREAL_ROOT)/include -Ofast
 LFLAGS=`pkg-config opencv --libs` -pthread
 # are we on Rasp ?
 ifeq ($(UNAME_M), armv7l)
@@ -16,7 +16,7 @@ EXE_NAME = detector
 EXE_PATH = $(BUILD_DIR)/$(EXE_NAME)
 
 SOURCE_DIR = source
-OBJS=main rectangle marker communication gui video_controller detector_controller color_chooser_gui input_controller aruco_marker
+OBJS=main rectangle marker communication gui video_controller detector_controller color_chooser_gui input_controller aruco_marker calibrate_controller
 
 all: $(BUILD_DIR) compile
 

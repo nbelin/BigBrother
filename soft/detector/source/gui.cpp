@@ -20,8 +20,8 @@ void GUI::addRectangle(const PositionMarker& pm) {
     if (pm.orientation > 0) {
         cv::line(*data.frame,
                  cv::Point(pm.x, (pm.minI + pm.maxI)/2),
-                 cv::Point(pm.x + pm.size * cos(pm.orientation * M_PI / 180.f) / 2,
-                           (pm.minI + pm.maxI)/2 + pm.size * sin(pm.orientation * M_PI / 180.f) / 2),
+                 cv::Point(pm.x + pm.size * cos(pm.orientation * M_PI / 180.f) * 0.7,
+                           (pm.minI + pm.maxI)/2 + pm.size * sin(pm.orientation * M_PI / 180.f) * 0.7),
                  cv::Scalar(0, 255, 0));
     }
 }
@@ -58,7 +58,7 @@ void GUI::update(void) {
 
     // show the final image
     cv::imshow("img", *data.frame);
-    cv::waitKey(200);
+    cv::waitKey(10);
 //    if (data.image.id > 10)
 //        cv::waitKey(2000);
 //    if (data.image.id > 175)

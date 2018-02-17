@@ -90,6 +90,9 @@ InputController::InputController(Data& data, int argc, char* argv[])
             data.method_choice = data.method_COLOR;
             data.color_choice = Color::LUV;
 
+        } else if (strcmp(argv[i], "-calibrate") == 0) {
+            data.method_choice = data.method_CALIBRATE;
+
         } else {
             show_help_and_exit("invalid option");
         }
@@ -109,7 +112,7 @@ void InputController::show_help_and_exit(const char * errMsg) {
     std::cout << "-r=<result_filename>\n";
     std::cout << "-m=[1|2|3|4] (list of markers to detect, default: 1)\n";
     std::cout << "-g=[0|1|2] (level of gui, default: 0)\n";
-    std::cout << "-aruco | -hsv | -luv (by default, aruco used)\n";
+    std::cout << "-aruco | -hsv | -luv | -calibrate (by default, aruco used)\n";
     exit(-1);
 }
 

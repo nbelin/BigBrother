@@ -13,6 +13,7 @@
 struct Data {
     static const int method_COLOR = 1;
     static const int method_ARUCO = 2;
+    static const int method_CALIBRATE = 3;
     cv::Mat * frame;
     cv::Mat luv;
     cv::Mat hsv;
