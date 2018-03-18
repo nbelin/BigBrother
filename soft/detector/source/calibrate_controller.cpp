@@ -43,7 +43,7 @@ void CalibrateController::update(void) {
 //    cv::imshow("video", *(data.frame));
     int key = cv::waitKey(40);
 
-    if (key == 10) { // enter
+    if (key == 10 || key == 13) { // enter
             std::cout << "Calibrating...\n";
             lastCalibrationResult = cv::calibrateCamera(realPointsVector, foundPoints, data.frame->size(),
                                                         data.cameraMatrix, data.distCoef, data.rvecs, data.tvecs);
