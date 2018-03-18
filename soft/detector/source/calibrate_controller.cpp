@@ -27,12 +27,15 @@ void CalibrateController::update(void) {
     if (data.method_choice != data.method_CALIBRATE || data.frame == nullptr) {
         return;
     }
+
     bool found = cv::findChessboardCorners(*(data.frame), cv::Size(7,7), workingPoints,
                                         CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
     if (found) {
         lastFoundPoints = workingPoints;
     }
+
     cv::drawChessboardCorners(*(data.frame), cv::Size(7,7), cv::Mat(workingPoints), found );
+
     showMat = data.frame->clone();
     showMat.resize(480,680);
     cv::imshow("video", showMat);

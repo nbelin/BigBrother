@@ -31,6 +31,8 @@ DetectorController::DetectorController(Data& data)
         //data.aruco_params->perpectiveRemovePixelPerCell = 4; ===> does not compile
         data.aruco_params->perspectiveRemoveIgnoredMarginPerCell = 0.4;
 
+        job_ready[0] = true;
+        job_ready[1] = true;
         thread_aruco[0] = std::thread(&DetectorController::jobArucoMarkers, this, 0);
         thread_aruco[1] = std::thread(&DetectorController::jobArucoMarkers, this, 1);
     }
@@ -53,7 +55,7 @@ void DetectorController::update(void) {
                 //std::cout << "NOP (1)\n";
             }
         }
-    } else {
+    } else if (data.method_choice == data.method_ARUCO) {
         //data.aruco_marker->getNextPos(*(data.frame), data, data.pm);
         job_done[0] = false;
         job_done[1] = false;
