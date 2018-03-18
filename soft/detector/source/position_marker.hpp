@@ -10,7 +10,7 @@ public:
     unsigned short imageID;
     unsigned short x;
     unsigned short size;
-    unsigned short orientation;
+    short orientation;
     unsigned short minI;
     unsigned short maxI;
     float confidence;

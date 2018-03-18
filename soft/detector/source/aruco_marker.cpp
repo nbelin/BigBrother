@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cmath>
 
+ArucoMarker::ArucoMarker(size_t offsetPixelLine) : offsetPixelLine(offsetPixelLine) {}
+
 bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vector<PositionMarker> &nextPos) {
     for (size_t i=0; i<nextPos.size(); ++i) {
         nextPos[i].reset();
@@ -9,7 +11,16 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 
     // need to reset vectors?
     cv::aruco::detectMarkers(image, data.aruco_dict, marker_corners, markers_ids, data.aruco_params);
+
+    // because of image correction, need to get the actual line of the corners
+    for (size_t i=0; i<marker_corners.size(); ++i) {
+        for (size_t j=0; j<marker_corners[i].size(); ++j) {
+            marker_corners[i][j].y += offsetPixelLine;
+        }
+    }
+
     cv::aruco::estimatePoseSingleMarkers(marker_corners, 65, data.cameraMatrix, data.distCoef, rvecs, tvecs);
+
     for (size_t i=0; i<markers_ids.size(); ++i) {
         cv::Mat rot_mat;
         cv::Rodrigues(rvecs[i], rot_mat);
@@ -18,10 +29,10 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
         cv::Mat rot_mat_t = rot_mat.t();
         // transform along z axis
         double * rz = rot_mat_t.ptr<double>(2); // x=0, y=1, z=2
-        double half_side = 35.;
-        tvecs[i][0] +=  rz[0]*half_side;
-        tvecs[i][1] +=  rz[1]*half_side;
-        tvecs[i][2] +=  rz[2]*half_side;
+        double half_side = 47.;
+        tvecs[i][0] -=  rz[0]*half_side;
+        tvecs[i][1] -=  rz[1]*half_side;
+        tvecs[i][2] -=  rz[2]*half_side;
 
 //        std::cout << "dx " << rz[0] << std::endl;
 //        std::cout << "dy " << rz[1] << std::endl;
@@ -33,6 +44,13 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 //        std::cout << "x " << rvecs[i][0] << std::endl;
 //        std::cout << "y " << rvecs[i][1] << std::endl;
 //        std::cout << "z " << rvecs[i][2] << std::endl << std::endl;
+
+        if (nextPos[0].pmID == 0) {
+            short angle = std::atan2(rz[2], rz[0]) * 180. / M_PI;
+            nextPos[0].orientation = angle;
+            nextPos[0].confidence = 1.;
+        }
+
     }
     return true;
 

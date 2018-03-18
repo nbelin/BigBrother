@@ -7,7 +7,7 @@ CalibrateController::CalibrateController(Data& data) : data(data) {
 
     cv::Point3f workingPoint;
     workingPoint.z = 0;
-    double squareSize = 292.0 / 8; // millimeters
+    double squareSize = 153.0 / 8; // millimeters
     for (size_t i=0; i<7; ++i) {
         workingPoint.x = squareSize * i;
         for (size_t j=0; j<7; ++j) {
@@ -47,10 +47,11 @@ void CalibrateController::update(void) {
             std::cout << "Final re-projection error: " << lastCalibrationResult << std::endl;
             saveCameraParams("camera.yml");
     } else if (key >= 0 && lastFoundPoints.size() > 0) {
-//        std::cout << key << std::endl;
+        std::cout << "(key " << key << ")" << std::endl;
         foundPoints.push_back(lastFoundPoints);
         realPointsVector.push_back(realPoints);
         std::cout << foundPoints.size() << " recorded images.\n";
+        lastFoundPoints.resize(0);
     }
 }
 

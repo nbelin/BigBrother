@@ -39,8 +39,12 @@ void Communication::sendMessage()
             int distance;
             pm.toWorld(&angle, &distance);
 
-            int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, " %d %f %d %f",
-                                  pm.pmID, angle, distance, pm.confidence);
+            int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, " %d %f %d %d %f",
+                                  pm.pmID, angle, distance, pm.orientation, pm.confidence);
+//            short cmd = ((pm.orientation+60)%90) * 5;
+//            if(cmd < -50) cmd = -50;
+//            if(cmd > 50) cmd = 50;
+//            int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, "%d\n", -cmd);
             if (result < 0) {
                 fprintf(stderr, "Communication::sendMessage snprintf() failed\n");
             }
