@@ -5,11 +5,15 @@
 
 class PositionMarker {
 public:
-    PositionMarker(unsigned short pmID = 0) : pmID(pmID), imageID(0), x(0), size(0), confidence(0), dx(0), dsize(0) {}
+    PositionMarker(unsigned short pmID = 0) : pmID(pmID) {
+        reset();
+    }
     unsigned short pmID;
     unsigned short imageID;
     unsigned short x;
     unsigned short size;
+    float angle;
+    unsigned short distance;
     short orientation;
     unsigned short minI;
     unsigned short maxI;
@@ -17,7 +21,8 @@ public:
     short dx;
     short dsize;
     void display() const {
-        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << " \torientation=" << orientation << "\n";
+        std::cout << "pmID=" << pmID << " imID=" << imageID << " \tx=" << x << " \tsize=" << size << "\n";
+        std::cout << "distance=" << distance << " \tangle=" << angle << " \torientation=" << orientation << "\n";
         std::cout << "minI=" << minI << " \tmaxI=" << maxI << "\n";
         std::cout << "confidence=" << confidence << " \tdx=" << dx << " \tdsize=" << dsize << "\n";
     }
@@ -25,6 +30,8 @@ public:
         imageID = 0;
         x = 0;
         size = 0;
+        angle = 0;
+        distance = 0;
         orientation = 0;
         minI = 0;
         maxI = 0;
@@ -35,9 +42,14 @@ public:
     bool hasBeenFound() const {
         return confidence > 0;
     }
-    bool toWorld(float * angle, int * distance) const {
+    bool toWorld(float * angle, unsigned short * distance) const {
         if (angle == nullptr || distance == nullptr) {
             return false;
+        }
+        if (this->distance > 0) {
+            // we already have the information needed
+            *angle = this->angle;
+            *distance = this->distance;
         }
         /*
          * - angle from -1 (90° to right) to 1 (90° to left)

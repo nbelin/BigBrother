@@ -29,7 +29,7 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
         cv::Mat rot_mat_t = rot_mat.t();
         // transform along z axis
         double * rz = rot_mat_t.ptr<double>(2); // x=0, y=1, z=2
-        double half_side = 47.;
+        double half_side = 49.;
         tvecs[i][0] -=  rz[0]*half_side;
         tvecs[i][1] -=  rz[1]*half_side;
         tvecs[i][2] -=  rz[2]*half_side;
@@ -37,18 +37,38 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 //        std::cout << "dx " << rz[0] << std::endl;
 //        std::cout << "dy " << rz[1] << std::endl;
 //        std::cout << "dz " << rz[2] << std::endl << std::endl;
-
 //        std::cout << std::atan2(rz[2], rz[0]) * 180. / M_PI << std::endl;
 
         cv::aruco::drawAxis(image, data.cameraMatrix, data.distCoef, rvecs[i], tvecs[i], 50.);
-//        std::cout << "x " << rvecs[i][0] << std::endl;
-//        std::cout << "y " << rvecs[i][1] << std::endl;
-//        std::cout << "z " << rvecs[i][2] << std::endl << std::endl;
+//        std::cout << "x " << tvecs[i][0] << std::endl;
+//        std::cout << "y " << tvecs[i][1] << std::endl;
+//        std::cout << "z " << tvecs[i][2] << std::endl << std::endl;
 
-        if (nextPos[0].pmID == 0) {
-            short angle = std::atan2(rz[2], rz[0]) * 180. / M_PI;
-            nextPos[0].orientation = angle;
-            nextPos[0].confidence = 1.;
+        for (size_t j=0; j<nextPos.size(); ++j) {
+            if (nextPos[j].pmID == markers_ids[i]/4) {
+                /*
+                 *  x => translation in front of the camera
+                 *  y => height (useless)
+                 *  z => depth from the camera
+                 *
+                 *        x ^
+                 *          |
+                 * camera<  +-> z
+                 */
+                const double x = tvecs[i][0];
+                const double z = tvecs[i][2];
+                nextPos[j].angle = std::atan2(x, z);
+                nextPos[j].distance = std::sqrt(x*x + z*z);
+
+                nextPos[j].orientation = short(360 + std::atan2(rz[0], rz[2]) * 180. / M_PI + 90*(markers_ids[i]%4)) % 360;
+                nextPos[j].confidence = 1.f;
+
+//                nextPos[j].x = 200;
+//                nextPos[j].size = 100;
+//                nextPos[j].minI = 100;
+//                nextPos[j].maxI = 200;
+//                nextPos[j].display();
+            }
         }
 
     }

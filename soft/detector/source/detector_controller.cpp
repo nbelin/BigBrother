@@ -98,7 +98,12 @@ void DetectorController::jobArucoMarkers(int id) {
         aruco_marker.getNextPos(sub_image, data, pm);
         //aruco_marker.markers_ids......
         for (size_t i=0; i<pm.size(); ++i) {
-            data.pm[pm[i].pmID] = pm[i];
+            for (size_t j=0; j<data.pm.size(); ++j) {
+                if (pm[i].pmID == data.pm[j].pmID) {
+                    data.pm[j] = pm[i];
+                    break;
+                }
+            }
         }
         job_done[id] = true;
     }

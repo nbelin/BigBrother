@@ -35,12 +35,13 @@ void Communication::sendMessage()
     for (size_t i=0; i<data.pm.size(); ++i) {
         PositionMarker &pm = data.pm[i];
         if (pm.hasBeenFound()) {
-            float angle;
-            int distance;
-            pm.toWorld(&angle, &distance);
+//            float angle;
+//            unsigned short distance;
+//            pm.display();
+//            pm.toWorld(&angle, &distance);
 
             int result = snprintf(buffer + bufferLen, BUFFLEN-1-bufferLen, " %d %f %d %d %f",
-                                  pm.pmID, angle, distance, pm.orientation, pm.confidence);
+                                  pm.pmID, pm.angle, pm.distance, pm.orientation, pm.confidence);
 //            short cmd = ((pm.orientation+60)%90) * 5;
 //            if(cmd < -50) cmd = -50;
 //            if(cmd > 50) cmd = 50;
