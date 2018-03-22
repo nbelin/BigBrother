@@ -232,6 +232,7 @@ class Robot:
 		self.id = Id
 		self.idstr = " R" + str(Id) + " "
 		self.pos = [0, 0]
+		self.orientation = 0
 		self.radius = 0
 		self.cameras = []
 		self.last_update = 0
@@ -278,8 +279,9 @@ class Robot:
 
 	def debug(self):
 		print ">> I'm robot #" + str(self.id)
-		print "pos    = " + str(self.pos)
-		print "radius = " + str(self.radius)
+		print "pos         = " + str(self.pos)
+		print "orientation = " + str(self.orientation)
+		print "radius      = " + str(self.radius)
 		print "I know " + str(len(self.cameras)) + " cameras"
 		print ""
 
@@ -288,15 +290,17 @@ class Marker:
 		self.id = Id
 		self.angle = 0
 		self.distance = 0
+		self.orientation = 0
 		self.confidence = 0
 		self.last_update = 0
 
 	def debug(self):
 		print ">> I'm marker #" + str(self.id)
-		print "angle    = " + str(self.angle)
-		print "distance = " + str(self.distance)
-		print "conf     = " + str(self.confidence)
-		print "last_upd = " + str(self.last_update)
+		print "angle       = " + str(self.angle)
+		print "distance    = " + str(self.distance)
+		print "orientation = " + str(self.orientation)
+		print "conf        = " + str(self.confidence)
+		print "last_update = " + str(self.last_update)
 		print ""
 
 class Camera:
@@ -316,13 +320,15 @@ class Camera:
 		print "[" + str(curTime) + "] camera_id: " + str(self.id) + " >> " + msg
                 marker = []
 		for i in range(len(fields) - 1):
-			if i % 4 == 0:
+			if i % 5 == 0:
 				marker = self.markers[int(fields[i + 1]) - 1] # markers[0] has "ID 1"
-			elif i % 4 == 1:
+			elif i % 5 == 1:
 				marker.angle = float(fields[i + 1])
-			elif i % 4 == 2:
+			elif i % 5 == 2:
 				marker.distance = int(fields[i + 1])
-			elif i % 4 == 3:
+			elif i % 5 == 3:
+				marker.orientation = int(fields[i + 1])
+			elif i % 5 == 4:
 				marker.confidence = float(fields[i + 1])
 				marker.last_update = curTime
 
