@@ -32,6 +32,7 @@ VideoController::VideoController(Data& data)
 
         if(!raspicap.open()) {
             std::cout << "Failed to open video (raspicam)\n";
+            std::cout << "On Rasp, try 'sudo modprobe bcm2835-v4l2' to enable PICam\n";
             exit(-1);
         }
 
@@ -43,7 +44,6 @@ VideoController::VideoController(Data& data)
 
     if(!cap.isOpened()) {
         std::cout << "Failed to open video\n";
-        std::cout << "On Rasp, try 'sudo modprobe bcm2835-v4l2' to enable PICam\n";
         exit(-1);
     }
 

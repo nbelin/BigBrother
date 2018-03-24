@@ -4,14 +4,17 @@
 DetectorController::DetectorController(Data& data)
     : data(data) {
 
-    if (data.method_choice == data.method_COLOR) {
+    switch (data.method_choice) {
+    case data.method_COLOR:
         // This first (dummy) image is used to initialize buffers in Classes
         data.image = Image3D(data.frame->cols, data.frame->rows, NULL);
 
         for (size_t i=0; i<data.pm.size(); ++i) {
             data.marker.push_back(getMarker(data.image, data.pm[i].pmID));
         }
-    } else {
+        break;
+
+    case data.method_ARUCO:
         //data.aruco_marker = new ArucoMarker;
         data.aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
         data.aruco_params = new cv::aruco::DetectorParameters;
@@ -35,6 +38,10 @@ DetectorController::DetectorController(Data& data)
         job_ready[1] = true;
         thread_aruco[0] = std::thread(&DetectorController::jobArucoMarkers, this, 0);
         thread_aruco[1] = std::thread(&DetectorController::jobArucoMarkers, this, 1);
+        break;
+
+    case data.method_CALIBRATE:
+        //do nothing
     }
 
     data.image.id = 0;
