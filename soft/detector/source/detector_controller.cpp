@@ -41,7 +41,7 @@ DetectorController::DetectorController(Data& data)
         break;
 
     case data.method_CALIBRATE:
-        //do nothing
+        ; //do nothing
     }
 
     data.image.id = 0;
