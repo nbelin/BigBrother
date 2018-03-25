@@ -57,7 +57,8 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
                  */
                 const double x = tvecs[i][0];
                 const double z = tvecs[i][2];
-                nextPos[j].angle = std::atan2(x, z);
+                const double rad = std::atan2(x, z);
+                nextPos[j].angle = rad / (M_PI / 2);
                 nextPos[j].distance = std::sqrt(x*x + z*z);
 
                 nextPos[j].orientation = short(360 + std::atan2(rz[0], rz[2]) * 180. / M_PI + 90*(markers_ids[i]%4)) % 360;
