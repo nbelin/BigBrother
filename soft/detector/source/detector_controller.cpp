@@ -52,7 +52,8 @@ void DetectorController::update(void) {
         std::cout << "NEXT POS " << data.image.id << std::endl; // this endl force flush from time to time
     }
 
-    if (data.method_choice == data.method_COLOR) {
+    switch (data.method_choice) {
+    case data.method_COLOR:
         for (size_t i=0; i<data.marker.size(); ++i) {
             if (data.marker[i].getNextPos(data.color_choice, data.image, data.pm[i])) {
                 //std::cout << "Found at POS " << data.image.id << "\n;
@@ -62,7 +63,15 @@ void DetectorController::update(void) {
                 //std::cout << "NOP (1)\n";
             }
         }
-    } else if (data.method_choice == data.method_ARUCO) {
+        break;
+
+    case data.method_ARUCO:
+        // Aruco detection needs pre-calibration
+        if (data.lastCalibrationResult <= 0) {
+            std::cout << "Error, camera must be pre-calibrated" << std::endl;
+            exit(1);
+        }
+
         //data.aruco_marker->getNextPos(*(data.frame), data, data.pm);
         job_done[0] = false;
         job_done[1] = false;
@@ -72,6 +81,10 @@ void DetectorController::update(void) {
         while (job_done[0] == false || job_done[1] == false) {
             std::this_thread::sleep_for(std::chrono::milliseconds(5));
         }
+        break;
+
+    default:
+        ; //do nothing
     }
 
     data.image.id++;

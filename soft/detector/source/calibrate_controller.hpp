@@ -14,7 +14,6 @@ private:
     std::vector<cv::Point3f> realPoints;
     std::vector<std::vector<cv::Point3f>> realPointsVector;
     cv::Mat showMat;
-    double lastCalibrationResult;
 
 public:
     CalibrateController(Data& data);

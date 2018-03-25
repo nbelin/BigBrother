@@ -3,7 +3,7 @@
 
 
 CalibrateController::CalibrateController(Data& data) : data(data) {
-    lastCalibrationResult = -1;
+    data.lastCalibrationResult = -1;
 
     cv::Point3f workingPoint;
     workingPoint.z = 0;
@@ -45,9 +45,9 @@ void CalibrateController::update(void) {
 
     if (key == 10 || key == 13) { // enter
             std::cout << "Calibrating...\n";
-            lastCalibrationResult = cv::calibrateCamera(realPointsVector, foundPoints, data.frame->size(),
+            data.lastCalibrationResult = cv::calibrateCamera(realPointsVector, foundPoints, data.frame->size(),
                                                         data.cameraMatrix, data.distCoef, data.rvecs, data.tvecs);
-            std::cout << "Final re-projection error: " << lastCalibrationResult << std::endl;
+            std::cout << "Final re-projection error: " << data.lastCalibrationResult << std::endl;
             saveCameraParams("camera.yml");
     } else if (key >= 0 && lastFoundPoints.size() > 0) {
         std::cout << "(key " << key << ")" << std::endl;
@@ -59,7 +59,7 @@ void CalibrateController::update(void) {
 }
 
 void CalibrateController::saveCameraParams(const char *filename) {
-    if (lastCalibrationResult < 0) {
+    if (data.lastCalibrationResult <= 0) {
         return;
     }
     cv::FileStorage fs(filename, cv::FileStorage::WRITE);
@@ -67,7 +67,7 @@ void CalibrateController::saveCameraParams(const char *filename) {
     time_t rawTime;
     time(&rawTime);
     fs << "calibration_date" << asctime(localtime(&rawTime));
-    fs << "calibration_result" << lastCalibrationResult;
+    fs << "calibration_result" << data.lastCalibrationResult;
     fs << "number_frames" << (int)foundPoints.size();
     fs << "camera_matrix" << data.cameraMatrix;
     fs << "dist_coeffs" << data.distCoef;
@@ -83,7 +83,7 @@ void CalibrateController::loadCameraParams(const char *filename) {
     std::string date;
     int numberFrames;
     fs["calibration_date"] >> date;
-    fs["calibration_result"] >> lastCalibrationResult;
+    fs["calibration_result"] >> data.lastCalibrationResult;
     fs["number_frames"] >> numberFrames;
     fs["camera_matrix"] >> data.cameraMatrix;
     fs["dist_coeffs"] >> data.distCoef;
@@ -92,5 +92,5 @@ void CalibrateController::loadCameraParams(const char *filename) {
 
     std::cout << "Read camera parameters from " << filename << ": \n";
     std::cout << "calibration_date: " << date;
-    std::cout << "number_frames: " << numberFrames << " \t calibration_result: " << lastCalibrationResult << std::endl;
+    std::cout << "number_frames: " << numberFrames << " \t calibration_result: " << data.lastCalibrationResult << std::endl;
 }

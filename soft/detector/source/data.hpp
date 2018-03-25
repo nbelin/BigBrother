@@ -35,6 +35,7 @@ struct Data {
     cv::Mat distCoef;
     std::vector<cv::Mat> rvecs;
     std::vector<cv::Mat> tvecs;
+    double lastCalibrationResult;
 };
 
 #endif//DATA_HPP
