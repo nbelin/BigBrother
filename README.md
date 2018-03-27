@@ -33,9 +33,82 @@ Camera 3 : -5°
 - raspicam
 - gstreamer 1.0
 
+## install on raspberry pi
+
+see https://www.pyimagesearch.com/2017/10/09/optimizing-opencv-on-the-raspberry-pi/
+
+### rince old opencv installation (if not already in opencv3)
+```bash
+sudo apt-get purge libopencv-dev
+sudo apt-get autoremove
+```
+
+### make some place on Rasp (optional)
+```bash
+sudo apt-get purge libopencv-core2.4
+sudo apt-get purge libreoffice*
+sudo apt-get autoremove
+```
+
+### update packages + dependencies for compiling opencv3 [may be long]
+```bash
+sudo apt-get update && sudo apt-get upgrade
+sudo apt-get install build-essential cmake pkg-config
+sudo apt-get install libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
+sudo apt-get install libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
+sudo apt-get install libxvidcore-dev libx264-dev
+sudo apt-get install libgtk2.0-dev libgtk-3-dev
+sudo apt-get install libcanberra-gtk*
+sudo apt-get install libatlas-base-dev gfortran
+sudo apt-get install python2.7-dev python3-dev
+```
+
+### download opencv3 sources (take most recent) [may be long]
+```bash
+wget https://github.com/opencv/opencv/archive/3.4.0.zip
+mv 3.4.0.zip opencv_3.4.0.zip
+wget https://github.com/opencv/opencv_contrib/archive/3.4.0.zip
+mv 3.4.0.zip opencv_contrib_3.4.0.zip
+unzip opencv_3.4.0.zip 
+unzip opencv_contrib_3.4.0.zip 
+```
+
+### compile opencv3 [very long]
+```bash
+cd opencv-3.4.0/
+mkdir build
+cd build/
+cmake -D CMAKE_BUILD_TYPE=RELEASE     -D CMAKE_INSTALL_PREFIX=/usr/local     -D OPENCV_EXTRA_MODULES_PATH=~/opencv_contrib-3.4.0/modules     -D ENABLE_NEON=ON     -D ENABLE_VFPV3=ON     -D BUILD_TESTS=OFF     -D INSTALL_PYTHON_EXAMPLES=OFF   -D BUILD_EXAMPLES=OFF   -D ENABLE_FAST_MATH=1  ..
+make
+sudo make install
+sudo ldconfig
+```
+
+### compile raspicam for opencv3
+```bash
+cd
+cd raspicam-0.1.6/
+rm -rf build/
+mkdir build
+cd build/
+cmake ..
+make
+sudo make install
+sudo ldconfig
+```
+
+### compile BigBrother
+```bash
+cd
+cd BigBrother/soft/detector
+make clean
+make
+```
+
 ## convert robot detection angle (from the point of view of the camera) to global positionning
 
 Use LUT (look up table) precomputed :
+```
 For each pixel column of a camera, compute the corresponding vector:
 Example camera 1 :
     column[0] = (0, 1)
@@ -44,11 +117,14 @@ Example camera 1 :
     column[MAX/2] = (0.707, 0.707)
     ...
     column[MAX] = (1, 0)
+```
 
+```
 Let T1, T2, T3 be the pixel column of the robot seen from the cameras 1, 2 and 3.
 PositionRobot_camera1 = (  0 + k1 * column[T1][0],   0 + k1 * column[T1][1])
 PositionRobot_camera2 = (200 + k2 * column[T2][0],   0 + k2 * column[T2][1])
 PositionRobot_camera3 = (100 + k3 * column[T3][0], 300 + k3 * column[T3][1])
+```
 
 ## find the k1, k2 and k3 vector coefficients
 
