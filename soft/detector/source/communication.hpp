@@ -17,6 +17,7 @@ public:
     void update(void);
 private:
     int socketId;
+    size_t messageUniqId;
     struct sockaddr_in socketAddr;
     static const int BUFFLEN = 1024;
     char buffer [BUFFLEN];

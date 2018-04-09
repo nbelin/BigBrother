@@ -16,6 +16,8 @@ Communication::Communication(Data& data) : data(data)
     socketAddr.sin_family = AF_INET;
     socketAddr.sin_port = htons(SERVER_PORT);
 
+    messageUniqId = 1;
+
     if (inet_aton(SERVER_IP, &socketAddr.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         assert(false);
@@ -31,7 +33,7 @@ Communication::~Communication()
 void Communication::sendMessage()
 {
     bool sendMessage = false;
-    int bufferLen = snprintf(buffer, BUFFLEN-1, "%d", CAMERA_ID);
+    int bufferLen = snprintf(buffer, BUFFLEN-1, "%d %lu", CAMERA_ID, messageUniqId);
     for (size_t i=0; i<data.pm.size(); ++i) {
         PositionMarker &pm = data.pm[i];
         if (pm.hasBeenFound()) {
@@ -61,6 +63,7 @@ void Communication::sendMessage()
         if (sendto(socketId, buffer, strlen(buffer) , 0 , (struct sockaddr *) &socketAddr, sizeof(socketAddr)) == -1) {
             fprintf(stderr, "Communication::sendMessage sendTo() failed\n");
         }
+        messageUniqId++;
     }
 }
 

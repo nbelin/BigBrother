@@ -326,6 +326,8 @@ class Camera:
 		self.pos = numpy.array(map(float, pos))
 		self.angle = float(angle)
 		self.markers = []
+		self.nbMsgRecvd = 0
+		self.lastUniqIdRecvd = 0
 		for i in range(4):
 			self.markers.append(Marker(i+1))
 
@@ -334,19 +336,21 @@ class Camera:
 		if self.id != int(fields[0]):
 			print "ERROR camera id " + fields[0] + " != " + str(self.id)
 			return
-		print "[" + str(curTime) + "] camera_id: " + str(self.id) + " >> " + msg
+		self.nbMsgRecvd += 1
+		self.lastUniqIdRecvd = int(fields[1])
+		print "[" + str(curTime) + "] camera_id: " + str(self.id) + " (msg " + str(self.nbMsgRecvd) + "/" + str(self.lastUniqIdRecvd) + ") >> " + msg
                 marker = []
-		for i in range(len(fields) - 1):
+		for i in range(len(fields) - 2):
 			if i % 5 == 0:
-				marker = self.markers[int(fields[i + 1]) - 1] # markers[0] has "ID 1"
+				marker = self.markers[int(fields[i + 2]) - 1] # markers[0] has "ID 1"
 			elif i % 5 == 1:
-				marker.angle = float(fields[i + 1])
+				marker.angle = float(fields[i + 2])
 			elif i % 5 == 2:
-				marker.distance = int(fields[i + 1])
+				marker.distance = int(fields[i + 2])
 			elif i % 5 == 3:
-				marker.orientation = int(fields[i + 1])
+				marker.orientation = int(fields[i + 2])
 			elif i % 5 == 4:
-				marker.confidence = float(fields[i + 1])
+				marker.confidence = float(fields[i + 2])
 				marker.last_update = curTime
 
 	def debug(self):
