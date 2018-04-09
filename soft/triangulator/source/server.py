@@ -7,6 +7,7 @@ import sys
 import time
 import numpy
 import pygame
+import traceback
 
 
 def anglesToVector(angle_cam, angle_mark):
@@ -21,7 +22,7 @@ def anglesToVector(angle_cam, angle_mark):
 	rad_angle = math.pi * angle / 2
 	cosa = math.cos(rad_angle)
 	sina = math.sin(rad_angle)
-	return numpy.array([cosa, sina])
+	return numpy.array([cosa, -sina])
 
 def areVectorsCollinear(v1, v2):
 	# vectors must be unitary, returns true for approx less than 6 degrees
@@ -60,20 +61,20 @@ def posFrom3Cameras(cams, markers, curTime):
 	# today, if one posFrom2Cameras fails, consider we also fail. Could be improved!
 	rpos12 = posFrom2Cameras(cams[0:2], markers[0:2], curTime)
 	if rpos12.radius < 0:
-		return [], -1
+		return RobotPos()
 	rpos23 = posFrom2Cameras(cams[1:3], markers[1:3], curTime)
 	if rpos23.radius < 0:
-		return [], -1
+		return RobotPos()
 	rpos13 = posFrom2Cameras([cams[0], cams[2]], [markers[0], markers[2]], curTime)
 	if rpos13.radius < 0:
-		return [], -1
+		return RobotPos()
 	res = centroid([rpos12, rpos23, rpos13])
 	# now let's make sure we are not to far from each position
 	dist12 = distPos(res, rpos12.pos)
 	dist23 = distPos(res, rpos23.pos)
 	dist13 = distPos(res, rpos13.pos)
 	if dist12 > rpos12.radius + 300 or dist23 > rpos23.radius + 300 or dist13 > rpos13.radius + 300:
-		return [], -1
+		return RobotPos()
 	# radxy is at best ~80, and at worst ~550
 	# radSum should be between 240 and 1650
 	# let's make some more magic to compute the final radius
@@ -83,7 +84,7 @@ def posFrom3Cameras(cams, markers, curTime):
 	# => final radius should be between 40mm and 300mm
 	radSum = rpos12.radius + rpos23.radius + rpos13.radius
 	distSum = dist12 + dist23 + dist13
-	return RobotPos(res, 0, int( radSum/12 + distSum/4 ))
+	return RobotPos(res, -1, int( radSum/12 + distSum/4 ))
 
 def posFrom2Cameras(cams, markers, curTime):
 	# x = x1 + k1*vx1
@@ -94,20 +95,20 @@ def posFrom2Cameras(cams, markers, curTime):
 	rpos2, vec2 = posFrom1Camera(cams[1], markers[1], curTime)
 	if distPos(rpos1.pos, rpos2.pos) > rpos1.radius + rpos2.radius + 500:
 		# don't bother to go further, if the approximate points viewed by the cameras are to far from each other
-		return [], -1
+		return RobotPos()
 	# first, check if vectors are (slightly) collinear because line intersection does not work in this case
 	if areVectorsCollinear(vec1, vec2):
 		# let's get the centroid of the 2 approx positions, and make sure this is not absurd
 		dist12 = distPos(rpos1.pos, rpos2.pos)
 		if dist12 > 800:
 			# information not good enough
-			return [], -1
+			return RobotPos()
 		res = numpy.array(centroid([rpos1, rpos2]))
 		# rad1 and rad2 are at best ~100, and at worst ~1000
 		# dist12/2 is expected to be somewhere between 50mm and 400mm
 		# (rad1+rad2)/4 is between 50mm and 500mm
 		radius = int( 30 + dist12/2 + (rpos1.radius + rpos2.radius)/4 )
-		return RobotPos(res, 0, radius)
+		return RobotPos(res, -1, radius)
 	
 	# line intersection
 	A1, B1, C1 = lineFrom2Points(cams[0].pos, rpos1.pos)
@@ -117,12 +118,12 @@ def posFrom2Cameras(cams, markers, curTime):
 	Dy = A1*C2 - C1*A2
 	if D == 0:
 		# lines do not intersect, should not happen because collinearity already tested
-		return [], -1
+		return RobotPos()
 	res = numpy.array(map(int, [ Dx/float(D), Dy/float(D) ]))
 	dist1 = distPos(rpos1.pos, res)
 	dist2 = distPos(rpos2.pos, res)
 	if dist1 > rpos1.radius + 400 or dist2 > rpos2.radius + 400:
-		return [], -1
+		return RobotPos()
 
 	# rad1 and rad2 are at best ~100, and at worst ~900
 	# here some magic, let's take the sum divided by 8 (so between 25 and 225)
@@ -130,12 +131,13 @@ def posFrom2Cameras(cams, markers, curTime):
 	# the sum divided by 4 is expected to be between 25mm and 300mm
 	# which means 50mm at best, 525mm at worst, => let's add a 30mm flat malus
 	radius = int( 30 + (rpos1.radius + rpos2.radius) / 6 + (dist1 + dist2) / 4 )
-	return RobotPos(res, 0, radius)
+	return RobotPos(res, -1, radius)
 
 def posFrom1Camera(cam, marker, curTime):
 	diffTime = curTime - marker.last_update
 	vector = anglesToVector(cam.angle, marker.angle)
 	pos = map(int, cam.pos + vector * marker.distance)
+	orientation = cam.angle * 90 + marker.orientation
 	# the closer the robot to the camera, the more accurate the distance information
 	# if the robot detection is recent, the information is more accurate (consider robot's speed is ~200mm/sec)
 	# for example:
@@ -145,7 +147,7 @@ def posFrom1Camera(cam, marker, curTime):
 	#  > 0.2 second old + 2500 mm from camera => far but recent => radius = 40+625 = 665 mm
 	#  > 0.3 second old + 1500 mm from camera => medium case => radius = 60+375 = 435 mm
 	radius = int(diffTime * 200 + marker.distance * 0.25)
-	return RobotPos(pos, 0, radius), vector
+	return RobotPos(pos, orientation, radius), vector
 
 class Gui:
 	@staticmethod
@@ -182,6 +184,7 @@ class Gui:
 		Gui.YELLOW = (255, 255, 0)
 		pygame.init()
 		Gui.font = pygame.font.SysFont("monospace", 25)
+		Gui.font_mini = pygame.font.SysFont("monospace", 20)
 		Gui.window = pygame.display.set_mode((740, 570), 0, 32)
 		Gui.drawTable()
 
@@ -201,7 +204,7 @@ class Gui:
 	def updateGui(curTime):
 		Gui.drawTable()
 		Gui.timetext = Gui.font.render("Time: " + str(curTime - Gui.start_time), True, Gui.BLACK, Gui.WHITE)
-		Gui.window.blit(Gui.timetext, (50, 20))
+		Gui.window.blit(Gui.timetext, (200, 5))
 		for cam in cameras:
 			for mark in cam.markers:
 				thickness = 2
@@ -226,10 +229,19 @@ class Gui:
 			rad = Gui.realDist2Gui(rob.rpos.radius)
 			color = Gui.colorFromId(rob.id)
 			pygame.draw.circle(Gui.window, color, center, rad, 2)
+			ori = rob.rpos.orientation
+			if ori >= 0:
+				vec_line = [rad * math.cos(ori * math.pi / 180.0), rad * math.sin(ori * math.pi / 180.0)]
+				end_line = [int(x+y) for x,y in zip(center, vec_line)]
+				#print center
+				#print end_line
+				pygame.draw.line(Gui.window, color, center, end_line, 2)
+			text = Gui.font_mini.render("R" + str(rob.id) + ": " + str(rob.rpos.pos), True, [c * 0.5 for c in color], Gui.WHITE)
+			Gui.window.blit(text, (150 + 250*int((rob.id -1) % 2), 40 + 20*int((rob.id -1)/2)))
 		pygame.display.update()
 
 class RobotPos:
-	def __init__(self, _pos=[0, 0], _orientation=0, _radius=0):
+	def __init__(self, _pos=[0, 0], _orientation=-1, _radius=-1):
 		self.pos = _pos
 		self.orientation = _orientation
 		self.radius = _radius
@@ -504,38 +516,41 @@ if use_gui:
 
 #### data to test perf and corner cases
 cameras[0].markers[0].last_update = time.time()
-cameras[1].markers[0].last_update = time.time()
-cameras[2].markers[0].last_update = time.time()
-cameras[0].markers[0].angle = -0.39
-cameras[1].markers[0].angle = 0.39
-cameras[2].markers[0].angle = -0.01
+#cameras[1].markers[0].last_update = time.time()
+#cameras[2].markers[0].last_update = time.time()
+cameras[0].markers[0].angle = 0.39
+cameras[1].markers[0].angle = -0.39
+cameras[2].markers[0].angle = 0.01
 cameras[0].markers[0].distance = 800
 cameras[1].markers[0].distance = 1000
 cameras[2].markers[0].distance = 2582
-cameras[0].markers[1].last_update = time.time()
-cameras[1].markers[1].last_update = time.time()
-cameras[2].markers[1].last_update = time.time()
-cameras[0].markers[1].angle = -0.22
-cameras[1].markers[1].angle = 0.29
-cameras[2].markers[1].angle = -0.09
+cameras[0].markers[0].orientation = 90
+cameras[1].markers[0].orientation = 270
+cameras[2].markers[0].orientation = 270
+#cameras[0].markers[1].last_update = time.time()
+#cameras[1].markers[1].last_update = time.time()
+#cameras[2].markers[1].last_update = time.time()
+cameras[0].markers[1].angle = 0.22
+cameras[1].markers[1].angle = -0.29
+cameras[2].markers[1].angle = 0.09
 cameras[0].markers[1].distance = 900
 cameras[1].markers[1].distance = 1400
 cameras[2].markers[1].distance = 2382
-cameras[0].markers[2].last_update = time.time()
-cameras[1].markers[2].last_update = time.time()
-cameras[2].markers[2].last_update = time.time()
-cameras[0].markers[2].angle = -0.19
-cameras[1].markers[2].angle = 0.04
-cameras[2].markers[2].angle = 0.07
+#cameras[0].markers[2].last_update = time.time()
+#cameras[1].markers[2].last_update = time.time()
+#cameras[2].markers[2].last_update = time.time()
+cameras[0].markers[2].angle = 0.19
+cameras[1].markers[2].angle = -0.04
+cameras[2].markers[2].angle = -0.07
 cameras[0].markers[2].distance = 1600
 cameras[1].markers[2].distance = 1100
 cameras[2].markers[2].distance = 1582
-cameras[0].markers[3].last_update = time.time()
-cameras[1].markers[3].last_update = time.time()
-cameras[2].markers[3].last_update = time.time()
-cameras[0].markers[3].angle = 0.42
-cameras[1].markers[3].angle = -0.04
-cameras[2].markers[3].angle = -0.48
+#cameras[0].markers[3].last_update = time.time()
+#cameras[1].markers[3].last_update = time.time()
+#cameras[2].markers[3].last_update = time.time()
+cameras[0].markers[3].angle = -0.42
+cameras[1].markers[3].angle = 0.04
+cameras[2].markers[3].angle = 0.48
 cameras[0].markers[3].distance = 2600
 cameras[1].markers[3].distance = 3200
 cameras[2].markers[3].distance = 1382
@@ -578,4 +593,5 @@ while True:
 		# listen to any client who wants information
 	except Exception as e:
 		#print repr(e)
+		#traceback.print_exc()
 		pass
