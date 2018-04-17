@@ -9,6 +9,14 @@ import numpy
 import pygame
 import traceback
 
+def customToRad(angle):
+	return math.pi * angle / 2
+
+def degToRad(angle):
+	return math.pi * angle / 180
+
+def radToDeg(angle):
+	return angle * 180 / math.pi
 
 def anglesToVector(angle_cam, angle_mark):
 	# angle_cam is the orientation of the camera
@@ -19,7 +27,7 @@ def anglesToVector(angle_cam, angle_mark):
 	# angle_mark is point of view from Camera.
 	# -1 means 90° on its left, 0 is forward, 1 is 90° on its right.
 	angle = angle_cam + angle_mark
-	rad_angle = math.pi * angle / 2
+	rad_angle = customToRad(angle)
 	cosa = math.cos(rad_angle)
 	sina = math.sin(rad_angle)
 	return numpy.array([cosa, -sina])
@@ -57,6 +65,33 @@ def isInTable(robot_pos):
 	maxY = 2000 + robot_pos.radius/2
 	return robot_pos.pos[0] > -minMaxX and robot_pos.pos[0] < minMaxX and robot_pos.pos[1] > minY and robot_pos.pos[1] < maxY
 
+def meanOrientations(oris):
+	# see "mean of circular quantities" on Google
+	# convert all orientations into [cos(a), sin(a)] representation
+	poses = []
+	for ori in oris:
+		if ori >= 0:
+			rad_ori = degToRad(ori)
+			poses.append([math.cos(rad_ori), math.sin(rad_ori)])
+	
+	# take the mean of the computed points (will give a point in the unit circle)
+	sumPos = [0.0, 0.0]
+	nbPos = 0.0
+	for pos in poses:
+		sumPos[0] += pos[0]
+		sumPos[1] += pos[1]
+		nbPos += 1
+	meanPos = [sumPos[0]/nbPos, sumPos[1]/nbPos]
+
+	# distance between [0, 0] and the meanPos will give us the quality of the information
+	dist = math.sqrt(meanPos[0] * meanPos[0] + meanPos[1] * meanPos[1])
+	if dist < 0.8:
+		return -1
+
+	rad_meanOri = math.atan2(meanPos[1], meanPos[0])
+	return int(radToDeg(rad_meanOri) + 360) % 360
+
+
 def posFrom3Cameras(cams, markers, curTime):
 	# today, if one posFrom2Cameras fails, consider we also fail. Could be improved!
 	rpos12 = posFrom2Cameras(cams[0:2], markers[0:2], curTime)
@@ -75,6 +110,9 @@ def posFrom3Cameras(cams, markers, curTime):
 	dist13 = distPos(res, rpos13.pos)
 	if dist12 > rpos12.radius + 300 or dist23 > rpos23.radius + 300 or dist13 > rpos13.radius + 300:
 		return RobotPos()
+
+	ori = meanOrientations([rpos12.orientation, rpos23.orientation, rpos13.orientation])
+
 	# radxy is at best ~80, and at worst ~550
 	# radSum should be between 240 and 1650
 	# let's make some more magic to compute the final radius
@@ -84,7 +122,7 @@ def posFrom3Cameras(cams, markers, curTime):
 	# => final radius should be between 40mm and 300mm
 	radSum = rpos12.radius + rpos23.radius + rpos13.radius
 	distSum = dist12 + dist23 + dist13
-	return RobotPos(res, -1, int( radSum/12 + distSum/4 ))
+	return RobotPos(res, ori, int( radSum/12 + distSum/4 ))
 
 def posFrom2Cameras(cams, markers, curTime):
 	# x = x1 + k1*vx1
@@ -96,6 +134,9 @@ def posFrom2Cameras(cams, markers, curTime):
 	if distPos(rpos1.pos, rpos2.pos) > rpos1.radius + rpos2.radius + 500:
 		# don't bother to go further, if the approximate points viewed by the cameras are to far from each other
 		return RobotPos()
+
+	ori = meanOrientations([rpos1.orientation, rpos2.orientation])
+
 	# first, check if vectors are (slightly) collinear because line intersection does not work in this case
 	if areVectorsCollinear(vec1, vec2):
 		# let's get the centroid of the 2 approx positions, and make sure this is not absurd
@@ -108,7 +149,7 @@ def posFrom2Cameras(cams, markers, curTime):
 		# dist12/2 is expected to be somewhere between 50mm and 400mm
 		# (rad1+rad2)/4 is between 50mm and 500mm
 		radius = int( 30 + dist12/2 + (rpos1.radius + rpos2.radius)/4 )
-		return RobotPos(res, -1, radius)
+		return RobotPos(res, ori, radius)
 	
 	# line intersection
 	A1, B1, C1 = lineFrom2Points(cams[0].pos, rpos1.pos)
@@ -131,7 +172,7 @@ def posFrom2Cameras(cams, markers, curTime):
 	# the sum divided by 4 is expected to be between 25mm and 300mm
 	# which means 50mm at best, 525mm at worst, => let's add a 30mm flat malus
 	radius = int( 30 + (rpos1.radius + rpos2.radius) / 6 + (dist1 + dist2) / 4 )
-	return RobotPos(res, -1, radius)
+	return RobotPos(res, ori, radius)
 
 def posFrom1Camera(cam, marker, curTime):
 	diffTime = curTime - marker.last_update
@@ -520,17 +561,17 @@ if use_gui:
 
 #### data to test perf and corner cases
 cameras[0].markers[0].last_update = time.time()
-#cameras[1].markers[0].last_update = time.time()
-#cameras[2].markers[0].last_update = time.time()
+cameras[1].markers[0].last_update = time.time()
+cameras[2].markers[0].last_update = time.time()
 cameras[0].markers[0].angle = 0.39
 cameras[1].markers[0].angle = -0.39
 cameras[2].markers[0].angle = 0.01
 cameras[0].markers[0].distance = 800
 cameras[1].markers[0].distance = 1000
 cameras[2].markers[0].distance = 2582
-cameras[0].markers[0].orientation = 90
-cameras[1].markers[0].orientation = 270
-cameras[2].markers[0].orientation = 270
+cameras[0].markers[0].orientation = 135
+cameras[1].markers[0].orientation = 225
+cameras[2].markers[0].orientation = 50
 #cameras[0].markers[1].last_update = time.time()
 #cameras[1].markers[1].last_update = time.time()
 #cameras[2].markers[1].last_update = time.time()
