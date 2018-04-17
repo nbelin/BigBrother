@@ -45,7 +45,7 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 //        std::cout << "z " << tvecs[i][2] << std::endl << std::endl;
 
         for (size_t j=0; j<nextPos.size(); ++j) {
-            if (nextPos[j].pmID == markers_ids[i]/4) {
+            if (nextPos[j].pmID == markers_ids[i]/4 + 1) {
                 /*
                  *  x => translation in front of the camera
                  *  y => height (useless)

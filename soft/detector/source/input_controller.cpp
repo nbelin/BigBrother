@@ -99,7 +99,9 @@ InputController::InputController(Data& data, int argc, char* argv[])
     }
 
     if (data.pm.size() == 0) {
-        data.pm.push_back(PositionMarker(1));
+        for (size_t i=0; i<4; ++i) {
+            data.pm.push_back(PositionMarker(i+1));
+        }
     }
 }
 

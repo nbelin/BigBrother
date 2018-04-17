@@ -96,11 +96,11 @@ void DetectorController::jobArucoMarkers(int id) {
     std::vector<PositionMarker> pm;
     pm.resize(2); // max 2 robots detected on a half-picture
     if (id == 0) { // the first half of the picture contains enemy robots
-        pm[0].pmID = 2;
-        pm[1].pmID = 3;
+        pm[0].pmID = 3;
+        pm[1].pmID = 4;
     } else { // the second half contains ally robots
-        pm[0].pmID = 0;
-        pm[1].pmID = 1;
+        pm[0].pmID = 1;
+        pm[1].pmID = 2;
     }
     int first_row = id==0 ? 0 : data.frame->rows / 2 - 20; // 20 more pixels to be sure to include middle of image
     int nb_row = data.frame->rows / 2 + 20;
