@@ -108,7 +108,7 @@ def posFrom3Cameras(cams, markers, curTime):
 	dist12 = distPos(res, rpos12.pos)
 	dist23 = distPos(res, rpos23.pos)
 	dist13 = distPos(res, rpos13.pos)
-	if dist12 > rpos12.radius + 300 or dist23 > rpos23.radius + 300 or dist13 > rpos13.radius + 300:
+	if dist12 > rpos12.radius + 200 or dist23 > rpos23.radius + 200 or dist13 > rpos13.radius + 200:
 		return RobotPos()
 
 	ori = meanOrientations([rpos12.orientation, rpos23.orientation, rpos13.orientation])
@@ -131,7 +131,7 @@ def posFrom2Cameras(cams, markers, curTime):
 	#   = y2 + k2*vy2
 	rpos1, vec1 = posFrom1Camera(cams[0], markers[0], curTime)
 	rpos2, vec2 = posFrom1Camera(cams[1], markers[1], curTime)
-	if distPos(rpos1.pos, rpos2.pos) > rpos1.radius + rpos2.radius + 500:
+	if distPos(rpos1.pos, rpos2.pos) > rpos1.radius + rpos2.radius + 300:
 		# don't bother to go further, if the approximate points viewed by the cameras are to far from each other
 		return RobotPos()
 
@@ -141,12 +141,12 @@ def posFrom2Cameras(cams, markers, curTime):
 	if areVectorsCollinear(vec1, vec2):
 		# let's get the centroid of the 2 approx positions, and make sure this is not absurd
 		dist12 = distPos(rpos1.pos, rpos2.pos)
-		if dist12 > 800:
+		if dist12 > 500:
 			# information not good enough
 			return RobotPos()
 		res = numpy.array(centroid([rpos1, rpos2]))
-		# rad1 and rad2 are at best ~100, and at worst ~1000
-		# dist12/2 is expected to be somewhere between 50mm and 400mm
+		# rad1 and rad2 are at best ~100, and at worst ~600
+		# dist12/2 is expected to be somewhere between 50mm and 300mm
 		# (rad1+rad2)/4 is between 50mm and 500mm
 		radius = int( 30 + dist12/2 + (rpos1.radius + rpos2.radius)/4 )
 		return RobotPos(res, ori, radius)
@@ -163,12 +163,12 @@ def posFrom2Cameras(cams, markers, curTime):
 	res = numpy.array(map(int, [ Dx/float(D), Dy/float(D) ]))
 	dist1 = distPos(rpos1.pos, res)
 	dist2 = distPos(rpos2.pos, res)
-	if dist1 > rpos1.radius + 400 or dist2 > rpos2.radius + 400:
+	if dist1 > rpos1.radius + 200 or dist2 > rpos2.radius + 200:
 		return RobotPos()
 
-	# rad1 and rad2 are at best ~100, and at worst ~900
-	# here some magic, let's take the sum divided by 8 (so between 25 and 225)
-	# the sum of distances is expected somewhere to be between 100mm and 1200mm
+	# rad1 and rad2 are at best ~100, and at worst ~600
+	# here some magic, let's take the sum divided by 8 (so between 25 and 150)
+	# the sum of distances is expected to be somewhere between 100mm and 1200mm
 	# the sum divided by 4 is expected to be between 25mm and 300mm
 	# which means 50mm at best, 525mm at worst, => let's add a 30mm flat malus
 	radius = int( 30 + (rpos1.radius + rpos2.radius) / 6 + (dist1 + dist2) / 4 )
@@ -182,12 +182,12 @@ def posFrom1Camera(cam, marker, curTime):
 	# the closer the robot to the camera, the more accurate the distance information
 	# if the robot detection is recent, the information is more accurate (consider robot's speed is ~200mm/sec)
 	# for example:
-	#  > 1 second old + 3500 mm from camera => worst case => radius = 200+875 = 1075 mm
-	#  > 0.1 second old + 400 mm from camera => almost best case => radius = 20+100 = 120 mm
-	#  > 0.5 second old + 500 mm from camera => close but old => radius = 100+125 = 225 mm
-	#  > 0.2 second old + 2500 mm from camera => far but recent => radius = 40+625 = 665 mm
-	#  > 0.3 second old + 1500 mm from camera => medium case => radius = 60+375 = 435 mm
-	radius = int(diffTime * 200 + marker.distance * 0.25)
+	#  > 1 second old + 3500 mm from camera => worst case => radius = 30+200+350 = 580 mm
+	#  > 0.1 second old + 400 mm from camera => almost best case => radius = 30+20+40 = 90 mm
+	#  > 0.5 second old + 500 mm from camera => close but old => radius = 30+100+50 = 180 mm
+	#  > 0.2 second old + 2500 mm from camera => far but recent => radius = 30+40+250 = 320 mm
+	#  > 0.3 second old + 1500 mm from camera => medium case => radius = 30+60+150 = 240 mm
+	radius = int(30 + diffTime * 200 + marker.distance * 0.1)
 	return RobotPos(pos, orientation, radius), vector
 
 class Gui:
