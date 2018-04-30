@@ -333,7 +333,7 @@ class Robot:
 		return self.found
 
 	def getMessage(self):
-		return self.idstr + str(self.rpos.pos[0]) + " " + str(self.rpos.pos[1]) + " " + str(self.rpos.radius)
+		return self.idstr + str(self.rpos.pos[0]) + " " + str(self.rpos.pos[1]) + " " + str(self.rpos.radius) + " " + str(self.rpos.orientation)
 
 	def debug(self):
 		print ">> I'm robot #" + str(self.id)
@@ -422,6 +422,7 @@ team_side = 0 # 0 for default team (left), 1 for other team (right)
 cameras = []
 robots = []
 last_time_update = 0
+nb_sent_messages = 0
 wait_game = False
 use_gui = False
 for arg in sys.argv:
@@ -581,9 +582,9 @@ cameras[2].markers[0].distance = 2582
 cameras[0].markers[0].orientation = 135
 cameras[1].markers[0].orientation = 225
 cameras[2].markers[0].orientation = 50
-#cameras[0].markers[1].last_update = time.time()
-#cameras[1].markers[1].last_update = time.time()
-#cameras[2].markers[1].last_update = time.time()
+cameras[0].markers[1].last_update = time.time()
+cameras[1].markers[1].last_update = time.time()
+cameras[2].markers[1].last_update = time.time()
 cameras[0].markers[1].angle = 0.22
 cameras[1].markers[1].angle = -0.29
 cameras[2].markers[1].angle = 0.09
@@ -626,6 +627,9 @@ while True:
 				if rob.updatePos(now):
 					msg += rob.getMessage()
 			if len(msg) > 0:
+				# keep track of message ID to debug network quality
+				nb_sent_messages += 1
+				msg = "[" + str(nb_sent_messages) + "]" + msg
 				# send message to robots
 				print "[" + str(now) + "] SEND: " + msg
 				try:
