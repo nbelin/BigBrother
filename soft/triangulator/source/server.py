@@ -418,6 +418,7 @@ UDP_PORT_ROBOT_CAST = 0
 UDP_ADDR_ROBOT_CAST = ""
 UDP_PORT_ROBOT_UNICAST = 0
 UDP_ADDR_ROBOT_UNICAST = range(3)
+team_side = 0 # 0 for default team (left), 1 for other team (right)
 cameras = []
 robots = []
 last_time_update = 0
@@ -527,9 +528,12 @@ if wait_game:
 			#arg_markers = "123"  # uncomment to test if no robot is up
 			#break
 			data = sock_start_listen.recv(1024)
-			if data.startswith("GO "):
-				arg_markers = data.split(" ")[1]
-				break
+			data_tokens = data.split(" ")
+			if data_tokens[0] != "GO":
+				raise RuntimeError("Message should start with 'GO' but started with: " + str(data_tokens[0]))
+			team_side = int(data_tokens[1])
+			arg_markers = data_tokens[2]
+			break
 		except Exception as e:
 			print repr(e)
 		sys.stdout.flush()
@@ -554,6 +558,11 @@ if wait_game:
 		sys.stdout.flush()
 		time.sleep(0.2)
 
+if team_side == 1:
+	# need to change default camera positions
+	for cam in cameras:
+		cam.pos[0] = -cam.pos[0]
+		cam.angle = 1 + (1 - cam.angle)
 
 if use_gui:
 	Gui.initGui()
