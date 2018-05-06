@@ -19,9 +19,10 @@ DetectorController::DetectorController(Data& data)
         data.aruco_dict = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
         data.aruco_params = new cv::aruco::DetectorParameters;
         // data.aruco_params->doCornerRefinement = true; ===> does not compile
-        data.aruco_params->cornerRefinementMaxIterations = 0;
-        // data.aruco_params->cornerRefinementWinSize = 1;
-        data.aruco_params->cornerRefinementMinAccuracy = 0;
+        data.aruco_params->cornerRefinementMethod = cv::aruco::CORNER_REFINE_CONTOUR;
+        data.aruco_params->cornerRefinementMaxIterations = 10;
+        data.aruco_params->cornerRefinementWinSize = 4;
+        data.aruco_params->cornerRefinementMinAccuracy = 0.2;
         // data.aruco_params->minMarkerPerimeterRate = 0.01;
         // data.aruco_params->maxMarkerPerimeterRate = 0.2;
         data.aruco_params->adaptiveThreshWinSizeMin = 5;
