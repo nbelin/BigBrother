@@ -304,8 +304,8 @@ class Robot:
 		detectedMarkers = []
 		for cam in cameras:
 			diffTime = curTime - cam.markers[self.id - 1].last_update
-			if diffTime < 2:
-				# if diffTime is > 2 seconds, consider information is out of date
+			if diffTime < 0.5:
+				# if diffTime is > 0.5 seconds, consider information is out of date
 				detectedCameras.append(cam)
 				detectedMarkers.append(cam.markers[self.id - 1])
 		self.last_update = curTime
@@ -570,9 +570,9 @@ if use_gui:
 
 
 #### data to test perf and corner cases
-cameras[0].markers[0].last_update = time.time()
-cameras[1].markers[0].last_update = time.time()
-cameras[2].markers[0].last_update = time.time()
+#cameras[0].markers[0].last_update = time.time()
+#cameras[1].markers[0].last_update = time.time()
+#cameras[2].markers[0].last_update = time.time()
 cameras[0].markers[0].angle = 0.39
 cameras[1].markers[0].angle = -0.39
 cameras[2].markers[0].angle = 0.01
@@ -582,9 +582,9 @@ cameras[2].markers[0].distance = 2582
 cameras[0].markers[0].orientation = 135
 cameras[1].markers[0].orientation = 225
 cameras[2].markers[0].orientation = 50
-cameras[0].markers[1].last_update = time.time()
-cameras[1].markers[1].last_update = time.time()
-cameras[2].markers[1].last_update = time.time()
+#cameras[0].markers[1].last_update = time.time()
+#cameras[1].markers[1].last_update = time.time()
+#cameras[2].markers[1].last_update = time.time()
 cameras[0].markers[1].angle = 0.22
 cameras[1].markers[1].angle = -0.29
 cameras[2].markers[1].angle = 0.09
