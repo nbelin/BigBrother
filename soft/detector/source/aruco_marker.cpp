@@ -19,7 +19,7 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
         }
     }
 
-    cv::aruco::estimatePoseSingleMarkers(marker_corners, 65, data.cameraMatrix, data.distCoef, rvecs, tvecs);
+    cv::aruco::estimatePoseSingleMarkers(marker_corners, 61, data.cameraMatrix, data.distCoef, rvecs, tvecs);
 
     for (size_t i=0; i<markers_ids.size(); ++i) {
         cv::Mat rot_mat;
@@ -38,8 +38,9 @@ bool ArucoMarker::getNextPos(cv::Mat& image, const struct Data &data, std::vecto
 //        std::cout << "dy " << rz[1] << std::endl;
 //        std::cout << "dz " << rz[2] << std::endl << std::endl;
 //        std::cout << std::atan2(rz[2], rz[0]) * 180. / M_PI << std::endl;
-
-        cv::aruco::drawAxis(image, data.cameraMatrix, data.distCoef, rvecs[i], tvecs[i], 50.);
+        if (data.gui_level > 0) {
+            cv::aruco::drawAxis(image, data.cameraMatrix, data.distCoef, rvecs[i], tvecs[i], 50.);
+        }
 //        std::cout << "x " << tvecs[i][0] << std::endl;
 //        std::cout << "y " << tvecs[i][1] << std::endl;
 //        std::cout << "z " << tvecs[i][2] << std::endl << std::endl;
